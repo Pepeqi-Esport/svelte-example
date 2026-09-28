@@ -1,130 +1,86 @@
 <script lang="ts">
+  import { onMount, tick } from "svelte";
+
   import { page } from "$app/state";
-  import { onMount } from "svelte";
-
-  import ProductApi from "$lib/api/product_api";
-
   import InputSkeleton from "$lib/components/InputSkeleton.svelte";
   import TextareaSkeleton from "$lib/components/TextareaSkeleton.svelte";
 
   import HashHelper from "$lib/helpers/hash_helper";
 
   import { cardAnimate } from "$lib/utils/animate";
-  import { blockCard, unblockCard } from "$lib/utils/block_ui";
-  import { notifyDanger, notifySuccess } from "$lib/utils/izi_toast";
+  import { formatNumberElement } from "$lib/utils/formatter";
+  import { loadRegex } from "$lib/utils/regex";
+
+  import { fetchData, fetchProductCategory, editData } from "./action";
+  import { initDropify, initFlatpickr, initFormValidation, initSelect2 } from "./init";
 
   let isLoading = $state(true);
-  let productId = $state(0);
 
-  let editForm = $state({
+  let productCategory = $state<any[]>([]);
+
+  let form = $state({
+    productId: 0,
+    productCategoryId: 0,
+    productCategoryHashId: "",
+    productCategoryName: "",
     name: "",
     description: "",
+    price: "",
+    publishedAt: "",
+    photoFile: null as File | null,
+    photoFileUrl: "",
   });
 
-  async function fetchData() {
-    isLoading = true;
+  let fv: ReturnType<typeof initFormValidation> = null;
 
-    let hashId = page.params.productId ?? "";
-    productId = HashHelper.decrypt(hashId);
+  if (page.params.productId) {
+    let productId = HashHelper.decrypt(page.params.productId);
 
-    let payload = {
-      productId: productId,
-    };
-
-    let response = await ProductApi.detailProduct(payload);
-
-    if (response.status) {
-      editForm.name = response.data.name ?? "";
-      editForm.description = response.data.description ?? "";
-    } else {
-      notifyDanger(response.message);
-    }
-
-    isLoading = false;
-  }
-
-  async function updateData() {
-    let payload = {
-      productId: productId,
-      name: editForm.name,
-      description: editForm.description,
-    };
-
-    blockCard();
-
-    let response = await ProductApi.updateProduct(payload);
-
-    unblockCard();
-
-    if (response.status) {
-      notifySuccess(response.message);
-    } else {
-      notifyDanger(response.message);
-    }
-  }
-
-  function initFormValidation() {
-    let editFormDocumentElement = document.getElementById("editForm");
-
-    FormValidation.formValidation(editFormDocumentElement, {
-      fields: {
-        name: {
-          validators: {
-            notEmpty: {
-              message: "Nama tidak boleh kosong !",
-            },
-          },
-        },
-
-        description: {
-          validators: {
-            notEmpty: {
-              message: "Deskripsi tidak boleh kosong !",
-            },
-          },
-        },
-      },
-      plugins: {
-        bootstrap5: new FormValidation.plugins.Bootstrap5({
-          eleValidClass: "",
-          rowSelector: ".mb-3",
-        }),
-        defaultSubmit: new FormValidation.plugins.DefaultSubmit(),
-        trigger: new FormValidation.plugins.Trigger(),
-        submitButton: new FormValidation.plugins.SubmitButton(),
-      },
-      init: (instance: { on: (event: string, handler: (e: { element: HTMLElement; messageElement: HTMLElement }) => void) => void }) => {
-        instance.on("plugins.message.placed", function (e) {
-          if (e.element.parentElement?.classList.contains("input-group")) {
-            e.element.parentElement.insertAdjacentElement("afterend", e.messageElement);
-          }
-        });
-      },
-    }).on("core.form.valid", async function () {
-      Swal.fire({
-        icon: "question",
-        text: "Apakah Anda yakin ingin menyimpan data ini ?",
-        showCancelButton: true,
-        buttonsStyling: false,
-        reverseButtons: true,
-        customClass: {
-          confirmButton: "btn btn-primary",
-          cancelButton: "btn btn-secondary",
-        },
-        confirmButtonText: "Simpan",
-        cancelButtonText: "Batal",
-      }).then(async (result: any) => {
-        if (result.isConfirmed) {
-          await updateData();
-        }
-      });
-    });
+    form.productId = productId;
   }
 
   onMount(async () => {
-    await fetchData();
+    isLoading = true;
 
-    initFormValidation();
+    let result = await fetchProductCategory();
+
+    if (result.status) {
+      productCategory = result.data;
+    }
+
+    result = await fetchData(form.productId);
+
+    let product = result.data;
+
+    let productCategoryHashId = HashHelper.encrypt(product.product_category.id);
+
+    form.productCategoryId = product.product_category.id;
+    form.productCategoryHashId = productCategoryHashId;
+    form.productCategoryName = product.product_category.name;
+    form.name = product.name;
+    form.description = product.description;
+    form.price = product.price;
+    form.publishedAt = product.publishedAt;
+    form.photoFileUrl = product.photoFileUrl;
+
+    isLoading = false;
+
+    await tick();
+    loadRegex();
+
+    fv = initFormValidation(() => editData(form, fv));
+
+    initSelect2((value) => {
+      form.productCategoryHashId = value;
+    }, fv);
+
+    initFlatpickr((value) => {
+      form.publishedAt = value;
+    }, fv);
+
+    initDropify((file) => {
+      form.photoFile = file;
+    }, fv);
   });
 </script>
 
@@ -154,12 +110,36 @@
           <div class="row">
             <div class="col-lg-12 col-md-12 col-sm-12">
               <div class="mb-3">
+                <label class="form-label" for="productCategoryId"> Kategori </label>
+
+                {#if isLoading}
+                  <InputSkeleton />
+                {:else}
+                  <select class="form-select" name="productCategoryId" id="productCategoryId" bind:value={form.productCategoryHashId}>
+                    <option value={form.productCategoryHashId}>
+                      {form.productCategoryName}
+                    </option>
+
+                    {#each productCategory as row}
+                      {#if row.id != form.productCategoryId}
+                        <option value={HashHelper.encrypt(row.id)}>
+                          {row.name}
+                        </option>
+                      {/if}
+                    {/each}
+                  </select>
+                {/if}
+              </div>
+            </div>
+
+            <div class="col-lg-12 col-md-12 col-sm-12">
+              <div class="mb-3">
                 <label class="form-label" for="name"> Nama </label>
 
                 {#if isLoading}
                   <InputSkeleton />
                 {:else}
-                  <input type="text" class="form-control" name="name" id="name" bind:value={editForm.name} placeholder="Masukkan Nama" autocomplete="off" />
+                  <input type="text" class="form-control" name="name" id="name" bind:value={form.name} placeholder="Masukkan Nama" autocomplete="off" />
                 {/if}
               </div>
             </div>
@@ -175,11 +155,74 @@
                     class="form-control"
                     name="description"
                     id="description"
-                    bind:value={editForm.description}
+                    bind:value={form.description}
                     placeholder="Masukkan Deskripsi"
                     autocomplete="off"
                     cols="30"
                     rows="5"></textarea>
+                {/if}
+              </div>
+            </div>
+
+            <div class="col-lg-12 col-md-12 col-sm-12">
+              <div class="mb-3">
+                <label class="form-label" for="price"> Harga </label>
+
+                {#if isLoading}
+                  <InputSkeleton />
+                {:else}
+                  <div class="input-group">
+                    <span class="input-group-text"> Rp </span>
+                    <input
+                      type="text"
+                      class="form-control regex-number"
+                      name="price"
+                      id="price"
+                      bind:value={form.price}
+                      onkeyup={(e) => {
+                        formatNumberElement(e.currentTarget);
+                        form.price = (e.currentTarget as HTMLInputElement).value;
+                      }}
+                      onpaste={(e) => {
+                        setTimeout(() => {
+                          formatNumberElement(e.currentTarget);
+                          form.price = (e.currentTarget as HTMLInputElement).value;
+                        }, 0);
+                      }}
+                      placeholder="Masukkan Harga"
+                      autocomplete="off" />
+                  </div>
+                {/if}
+              </div>
+            </div>
+
+            <div class="col-lg-12 col-md-12 col-sm-12">
+              <div class="mb-3">
+                <label class="form-label" for="publishedAt"> Diterbitkan Pada </label>
+
+                {#if isLoading}
+                  <InputSkeleton />
+                {:else}
+                  <input
+                    type="text"
+                    class="form-control"
+                    name="publishedAt"
+                    id="publishedAt"
+                    bind:value={form.publishedAt}
+                    placeholder="Masukkan Diterbitkan Pada"
+                    autocomplete="off" />
+                {/if}
+              </div>
+            </div>
+
+            <div class="col-lg-12 col-md-12 col-sm-12">
+              <div class="mb-3">
+                <label class="form-label" for="photoFile"> Foto </label>
+
+                {#if isLoading}
+                  <TextareaSkeleton />
+                {:else}
+                  <input type="file" name="photoFile" id="photoFile" data-allowed-file-extensions="jpg jpeg png" data-max-file-size="5M" />
                 {/if}
               </div>
             </div>

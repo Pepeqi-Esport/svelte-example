@@ -7,83 +7,54 @@
   import HashHelper from "$lib/helpers/hash_helper";
 
   import { cardAnimate } from "$lib/utils/animate";
-  import { blockCard, unblockCard } from "$lib/utils/block_ui";
-  import { notifyDanger, notifySuccess } from "$lib/utils/izi_toast";
   import { formatNumberElement } from "$lib/utils/formatter";
   import { loadRegex } from "$lib/utils/regex";
 
-  import { createProductData, fetchProductCategoryList } from "./actions";
-  import { getEmptyCreateForm, resetFormPlugins } from "./form";
-  import { initDropify, initFlatpickr, initFormValidation, initSelect2 } from "./init";
+  import { createData, fetchProductCategory } from "./action";
+  import { initFormValidation, initSelect2, initFlatpickr, initDropify } from "./init";
 
   let isLoading = $state(true);
-  let isResetForm = false;
 
   let productCategory = $state<any[]>([]);
-  let fv: any = null;
 
-  let createForm = $state(getEmptyCreateForm());
+  let fv: ReturnType<typeof initFormValidation> = null;
 
-  async function fetchProductCategory() {
-    let response = await fetchProductCategoryList();
-
-    if (response.status) {
-      productCategory = response.data;
-    }
-  }
-
-  async function createData() {
-    blockCard();
-
-    let response = await createProductData(createForm);
-
-    unblockCard();
-
-    if (response.status) {
-      notifySuccess(response.message);
-      resetForm();
-    } else {
-      notifyDanger(response.message);
-    }
-  }
-
-  function resetForm() {
-    isResetForm = true;
-    createForm = getEmptyCreateForm();
-    resetFormPlugins(fv);
-
-    setTimeout(() => {
-      resetFormPlugins(fv);
-      isResetForm = false;
-    }, 0);
-  }
+  let createForm = $state({
+    productCategoryId: "",
+    name: "",
+    description: "",
+    price: "",
+    publishedAt: "",
+    photoFile: null as File | null,
+  });
 
   onMount(async () => {
     isLoading = true;
 
-    await fetchProductCategory();
+    let result = await fetchProductCategory();
+
+    if (result.status) {
+      productCategory = result.data;
+    }
 
     isLoading = false;
 
     await tick();
     loadRegex();
 
+    fv = initFormValidation(() => createData(createForm, fv));
+
     initSelect2((value) => {
       createForm.productCategoryId = value;
-    });
+    }, fv);
 
     initFlatpickr((value) => {
       createForm.publishedAt = value;
-    });
+    }, fv);
 
     initDropify((file) => {
       createForm.photoFile = file;
-    });
-
-    fv = initFormValidation({
-      isResetting: () => isResetForm,
-      onValid: createData,
-    });
+    }, fv);
   });
 </script>
 

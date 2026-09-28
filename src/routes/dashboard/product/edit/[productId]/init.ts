@@ -13,7 +13,7 @@ import { loadElementSelect2 } from "$lib/utils/select2";
 import "$lib/utils/select2_translation";
 
 function initFormValidation(onValid: () => void | Promise<void>) {
-  const form = document.getElementById("createForm");
+  const form = document.getElementById("editForm");
 
   if (!form) {
     return null;

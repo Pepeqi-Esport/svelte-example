@@ -1,17 +1,15 @@
 <script lang="ts">
   import { onMount } from "svelte";
-
-  import ProductCategoryApi from "$lib/api/product_category_api";
+  import Swal, { type SweetAlertResult } from "sweetalert2";
 
   import TableSkeleton from "$lib/components/TableSkeleton.svelte";
   import PaginationTable from "$lib/components/PaginationTable.svelte";
 
-  import CheckHelper from "$lib/helpers/check_helper";
   import HashHelper from "$lib/helpers/hash_helper";
 
   import { cardAnimate } from "$lib/utils/animate";
-  import { blockCard, unblockCard } from "$lib/utils/block_ui";
-  import { notifyDanger, notifySuccess } from "$lib/utils/izi_toast";
+
+  import { deleteData, fetchData } from "./action";
 
   let isLoading = $state(true);
 
@@ -29,68 +27,25 @@
     name: "",
   });
 
-  async function fetchData(targetPage = page) {
-    page = targetPage;
-
-    let filterPayload: Record<string, string> = {};
-
-    if (CheckHelper.isset(filterForm.name)) {
-      filterPayload.name = filterForm.name;
-    }
-
-    let payload = {
-      isPaginate: true,
-      page: page,
-      perPage: perPage,
-      orderBy: orderBy,
-      orderType: orderType,
-      ...(Object.keys(filterPayload).length > 0 && {
-        filter: filterPayload,
-      }),
-    };
-
-    let response = await ProductCategoryApi.getProductCategory(payload);
-
-    if (response.status) {
-      data = response.data;
-      pagination = response.pagination;
-    }
-  }
-
-  async function deleteData(hashId: string) {
-    blockCard();
-
-    let id = HashHelper.decrypt(hashId);
-
-    let payload = {
-      productCategoryId: id,
-    };
-
-    let response = await ProductCategoryApi.deleteProductCategory(payload);
-
-    if (response.status) {
-      notifySuccess(response.message);
-    } else {
-      notifyDanger(response.message);
-    }
-
-    unblockCard();
-
-    await fetchData(1);
-  }
-
   async function handlePerPageChange() {
     isLoading = true;
 
-    await fetchData(1);
+    let result = await fetchData(1, perPage, orderBy, orderType, filterForm);
+
+    data = result.data;
+    pagination = result.pagination;
 
     isLoading = false;
   }
 
   async function handlePageChange(targetPage: number) {
     isLoading = true;
+    page = targetPage;
 
-    await fetchData(targetPage);
+    let result = await fetchData(targetPage, perPage, orderBy, orderType, filterForm);
+
+    data = result.data;
+    pagination = result.pagination;
 
     isLoading = false;
   }
@@ -106,8 +61,12 @@
     }
 
     isLoading = true;
+    page = 1;
 
-    await fetchData(1);
+    let result = await fetchData(1, perPage, orderBy, orderType, filterForm);
+
+    data = result.data;
+    pagination = result.pagination;
 
     isLoading = false;
   }
@@ -125,9 +84,18 @@
       },
       confirmButtonText: "Hapus",
       cancelButtonText: "Batal",
-    }).then(async (result: any) => {
+    }).then(async (result: SweetAlertResult) => {
       if (result.isConfirmed) {
         await deleteData(hashId);
+
+        isLoading = true;
+
+        let result = await fetchData(1, perPage, orderBy, orderType, filterForm);
+
+        data = result.data;
+        pagination = result.pagination;
+
+        isLoading = false;
       }
     });
   }
@@ -135,7 +103,10 @@
   onMount(async () => {
     isLoading = true;
 
-    await fetchData(1);
+    let result = await fetchData(1, perPage, orderBy, orderType, filterForm);
+
+    data = result.data;
+    pagination = result.pagination;
 
     isLoading = false;
   });
@@ -167,6 +138,7 @@
           <label class="form-label mb-0" for="perPage">Tampilkan</label>
 
           <select class="form-select w-auto" id="perPage" bind:value={perPage} onchange={handlePerPageChange}>
+            <option value={1}>1</option>
             <option value={10}>10</option>
             <option value={25}>25</option>
             <option value={50}>50</option>

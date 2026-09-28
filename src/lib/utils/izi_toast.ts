@@ -1,4 +1,5 @@
 import iziToast from "izitoast";
+import "izitoast/dist/css/iziToast.css";
 
 function notifyInfo(message: string) {
   iziToast.show({

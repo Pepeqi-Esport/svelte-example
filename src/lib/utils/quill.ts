@@ -1,4 +1,6 @@
-function loadElementQuill(element: string | HTMLElement) {
+import Quill from "quill";
+
+function loadElementQuill(element: any) {
   let toolbarOptions = [
     [
       {

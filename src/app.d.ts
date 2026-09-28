@@ -10,22 +10,7 @@ declare global {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const FormValidation: any;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const bootstrap: any;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const Swal: any;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const Quill: any;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const Block: {
-    standard: (selector: string, options?: Record<string, unknown>) => void;
-    remove: (selector: string) => void;
-  };
 
   interface JQuery {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -35,9 +20,6 @@ declare global {
         require: unknown;
       };
     };
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    flatpickr: (options?: Record<string, any>) => any;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     dropify: (options?: Record<string, any>) => any;

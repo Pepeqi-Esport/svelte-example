@@ -1,130 +1,44 @@
 <script lang="ts">
-  import { page } from "$app/state";
   import { onMount } from "svelte";
 
-  import ProductCategoryApi from "$lib/api/product_category_api";
-
+  import { page } from "$app/state";
   import InputSkeleton from "$lib/components/InputSkeleton.svelte";
   import TextareaSkeleton from "$lib/components/TextareaSkeleton.svelte";
 
   import HashHelper from "$lib/helpers/hash_helper";
 
   import { cardAnimate } from "$lib/utils/animate";
-  import { blockCard, unblockCard } from "$lib/utils/block_ui";
-  import { notifyDanger, notifySuccess } from "$lib/utils/izi_toast";
+
+  import { fetchData, updateData } from "./action";
+  import { initFormValidation } from "./init";
 
   let isLoading = $state(true);
-  let productCategoryId = $state(0);
 
   let editForm = $state({
+    productCategoryId: 0,
     name: "",
     description: "",
   });
 
-  async function fetchData() {
-    isLoading = true;
+  let fv: ReturnType<typeof initFormValidation> = null;
 
-    let hashId = page.params.productCategoryId ?? "";
-    productCategoryId = HashHelper.decrypt(hashId);
+  if (page.params.productCategoryId) {
+    let productCategoryId = HashHelper.decrypt(page.params.productCategoryId);
 
-    let payload = {
-      productCategoryId: productCategoryId,
-    };
-
-    let response = await ProductCategoryApi.detailProductCategory(payload);
-
-    if (response.status) {
-      editForm.name = response.data.name ?? "";
-      editForm.description = response.data.description ?? "";
-    } else {
-      notifyDanger(response.message);
-    }
-
-    isLoading = false;
-  }
-
-  async function updateData() {
-    let payload = {
-      productCategoryId,
-      name: editForm.name,
-      description: editForm.description,
-    };
-
-    blockCard();
-
-    let response = await ProductCategoryApi.updateProductCategory(payload);
-
-    unblockCard();
-
-    if (response.status) {
-      notifySuccess(response.message);
-    } else {
-      notifyDanger(response.message);
-    }
-  }
-
-  function initFormValidation() {
-    let editFormDocumentElement = document.getElementById("editForm");
-
-    FormValidation.formValidation(editFormDocumentElement, {
-      fields: {
-        name: {
-          validators: {
-            notEmpty: {
-              message: "Nama tidak boleh kosong !",
-            },
-          },
-        },
-
-        description: {
-          validators: {
-            notEmpty: {
-              message: "Deskripsi tidak boleh kosong !",
-            },
-          },
-        },
-      },
-      plugins: {
-        bootstrap5: new FormValidation.plugins.Bootstrap5({
-          eleValidClass: "",
-          rowSelector: ".mb-3",
-        }),
-        defaultSubmit: new FormValidation.plugins.DefaultSubmit(),
-        trigger: new FormValidation.plugins.Trigger(),
-        submitButton: new FormValidation.plugins.SubmitButton(),
-      },
-      init: (instance: { on: (event: string, handler: (e: { element: HTMLElement; messageElement: HTMLElement }) => void) => void }) => {
-        instance.on("plugins.message.placed", function (e) {
-          if (e.element.parentElement?.classList.contains("input-group")) {
-            e.element.parentElement.insertAdjacentElement("afterend", e.messageElement);
-          }
-        });
-      },
-    }).on("core.form.valid", async function () {
-      Swal.fire({
-        icon: "question",
-        text: "Apakah Anda yakin ingin menyimpan data ini ?",
-        showCancelButton: true,
-        buttonsStyling: false,
-        reverseButtons: true,
-        customClass: {
-          confirmButton: "btn btn-primary",
-          cancelButton: "btn btn-secondary",
-        },
-        confirmButtonText: "Simpan",
-        cancelButtonText: "Batal",
-      }).then(async (result: any) => {
-        if (result.isConfirmed) {
-          await updateData();
-        }
-      });
-    });
+    editForm.productCategoryId = productCategoryId;
   }
 
   onMount(async () => {
-    await fetchData();
+    isLoading = true;
 
-    initFormValidation();
+    let result = await fetchData(editForm.productCategoryId);
+
+    editForm.name = result.data.name;
+    editForm.description = result.data.description;
+
+    isLoading = false;
+
+    initFormValidation(async () => await updateData(editForm, fv));
   });
 </script>
 

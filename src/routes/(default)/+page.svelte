@@ -1,113 +1,19 @@
 <script lang="ts">
-  import jQuery from "jquery";
   import { onMount } from "svelte";
 
-  import { goto } from "$app/navigation";
-
-  import AuthApi from "$lib/api/auth_api";
-
-  import AuthHelper from "$lib/helpers/auth_helper";
-
   import { cardAnimate } from "$lib/utils/animate";
-  import { blockCard, unblockCard } from "$lib/utils/block_ui";
-  import { notifyDanger } from "$lib/utils/izi_toast";
+  import { authenticate, visiblePassword } from "./action";
+  import { initFormValidation } from "./init";
 
   let loginForm = $state({
     email: "",
     password: "",
   });
 
-  function visiblePassword() {
-    const passwordElement = jQuery("#password");
-    const passwordIconElement = jQuery("#password-icon");
-
-    const originalType = passwordElement.data("original-type");
-
-    if (originalType == "password") {
-      passwordElement.attr("type", "text");
-      passwordElement.data("original-type", "text");
-      passwordIconElement.attr("class", "icon-base ti tabler-eye");
-    } else {
-      passwordElement.attr("type", "password");
-      passwordElement.data("original-type", "password");
-      passwordIconElement.attr("class", "icon-base ti tabler-eye-off");
-    }
-  }
-
-  async function authenticate() {
-    let payload = {
-      email: loginForm.email,
-      password: loginForm.password,
-    };
-
-    blockCard();
-
-    let result = await AuthApi.login(payload);
-
-    unblockCard();
-
-    if (result.status) {
-      let user = result.data;
-      let token = result.token.access_token;
-      let expiredAt = result.token.expired_at;
-
-      AuthHelper.saveSession(user, token, expiredAt);
-
-      await goto("/dashboard/home");
-    } else {
-      let errorMessage = result.error[0].message;
-
-      notifyDanger(errorMessage);
-    }
-  }
-
-  function initFormValidation() {
-    let loginFormDocumentElement = document.getElementById("loginForm");
-
-    FormValidation.formValidation(loginFormDocumentElement, {
-      fields: {
-        email: {
-          validators: {
-            notEmpty: {
-              message: "Email tidak boleh kosong !",
-            },
-            emailAddress: {
-              message: "Format email tidak valid !",
-            },
-          },
-        },
-
-        password: {
-          validators: {
-            notEmpty: {
-              message: "Password tidak boleh kosong !",
-            },
-          },
-        },
-      },
-      plugins: {
-        bootstrap5: new FormValidation.plugins.Bootstrap5({
-          eleValidClass: "",
-          rowSelector: ".mb-3",
-        }),
-        defaultSubmit: new FormValidation.plugins.DefaultSubmit(),
-        trigger: new FormValidation.plugins.Trigger(),
-        submitButton: new FormValidation.plugins.SubmitButton(),
-      },
-      init: (instance: { on: (event: string, handler: (e: { element: HTMLElement; messageElement: HTMLElement }) => void) => void }) => {
-        instance.on("plugins.message.placed", function (e) {
-          if (e.element.parentElement?.classList.contains("input-group")) {
-            e.element.parentElement.insertAdjacentElement("afterend", e.messageElement);
-          }
-        });
-      },
-    }).on("core.form.valid", async function () {
-      await authenticate();
-    });
-  }
+  let fv: ReturnType<typeof initFormValidation> = null;
 
   onMount(() => {
-    initFormValidation();
+    fv = initFormValidation(async () => await authenticate(loginForm, fv));
   });
 </script>
 

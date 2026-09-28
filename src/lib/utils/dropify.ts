@@ -1,6 +1,4 @@
-type DropifyElement = JQuery<HTMLElement>;
-
-function _getDropifyOptions(element: DropifyElement) {
+function _getDropifyOptions(element: any) {
   let allowedExtension = element.attr("data-allowed-file-extensions");
   let allowedExtensionText = "";
 
@@ -48,7 +46,7 @@ function loadDropify() {
   let dropifyElement = jQuery(".dropify");
 
   if (dropifyElement.length > 0) {
-    dropifyElement.each(function () {
+    dropifyElement.each(function (this: any) {
       let element = jQuery(this);
 
       element.dropify(_getDropifyOptions(element));
@@ -56,7 +54,7 @@ function loadDropify() {
   }
 }
 
-function loadElementDropify(element: DropifyElement) {
+function loadElementDropify(element: any) {
   element.dropify(_getDropifyOptions(element));
 }
 

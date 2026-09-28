@@ -1,42 +1,22 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
-  import ProductApi from "$lib/api/product_api";
-  import ProductCategoryApi from "$lib/api/product_category_api";
-
   import { cardAnimate } from "$lib/utils/animate";
+
+  import { fetchData } from "./action";
 
   let isLoading = $state(true);
   let productCount = $state(0);
   let productCategoryCount = $state(0);
 
-  async function fetchData() {
+  onMount(async () => {
     isLoading = true;
 
-    let payload = {
-      isPaginate: true,
-      page: 1,
-      perPage: 10,
-      orderBy: "name",
-      orderType: "asc",
-    };
+    let data = await fetchData();
 
-    let productResponse = await ProductApi.getProduct(payload);
-    let productCategoryResponse = await ProductCategoryApi.getProductCategory(payload);
-
-    if (productResponse.status) {
-      productCount = productResponse.pagination.total;
-    }
-
-    if (productCategoryResponse.status) {
-      productCategoryCount = productCategoryResponse.pagination.total;
-    }
-
+    productCount = data.productCount;
+    productCategoryCount = data.productCategoryCount;
     isLoading = false;
-  }
-
-  onMount(async () => {
-    await fetchData();
   });
 </script>
 

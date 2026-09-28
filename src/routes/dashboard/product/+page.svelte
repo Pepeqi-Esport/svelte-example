@@ -1,23 +1,20 @@
 <script lang="ts">
   import { onMount, tick } from "svelte";
-
-  import ProductCategoryApi from "$lib/api/product_category_api";
-  import ProductApi from "$lib/api/product_api";
+  import Swal, { type SweetAlertResult } from "sweetalert2";
 
   import TableSkeleton from "$lib/components/TableSkeleton.svelte";
   import PaginationTable from "$lib/components/PaginationTable.svelte";
 
   import FormatterHelper from "$lib/helpers/formatter_helper";
-  import CheckHelper from "$lib/helpers/check_helper";
   import HashHelper from "$lib/helpers/hash_helper";
 
   import { cardAnimate } from "$lib/utils/animate";
-  import { blockCard, unblockCard } from "$lib/utils/block_ui";
   import { formatNumberElement } from "$lib/utils/formatter";
-  import { notifyDanger, notifySuccess } from "$lib/utils/izi_toast";
   import { loadRegex } from "$lib/utils/regex";
-  import { loadElementSelect2Modal } from "$lib/utils/select2";
   import "$lib/utils/select2_translation";
+
+  import { deleteData, fetchData, fetchProductCategory } from "./action";
+  import { initSelect2 } from "./init";
 
   let isLoading = $state(true);
 
@@ -39,88 +36,14 @@
     price: "",
   });
 
-  async function fetchProductCategory() {
-    let payload = {
-      isPaginate: false,
-      page: 1,
-      perPage: 10,
-      orderBy: "name",
-      orderType: "asc",
-    };
-
-    let response = await ProductCategoryApi.getProductCategory(payload);
-
-    if (response.status) {
-      productCategory = response.data;
-    }
-  }
-
-  async function fetchData(targetPage = page) {
-    page = targetPage;
-
-    let filterPayload: Record<string, string> = {};
-
-    if (CheckHelper.isset(filterForm.productCategoryId)) {
-      filterPayload.product_category_id = filterForm.productCategoryId;
-    }
-
-    if (CheckHelper.isset(filterForm.name)) {
-      filterPayload.name = filterForm.name;
-    }
-
-    if (CheckHelper.isset(filterForm.price)) {
-      filterPayload.price = filterForm.price;
-    }
-
-    let payload = {
-      isPaginate: true,
-      page: page,
-      perPage: perPage,
-      orderBy: orderBy,
-      orderType: orderType,
-      ...(Object.keys(filterPayload).length > 0 && {
-        filter: filterPayload,
-      }),
-    };
-
-    let response = await ProductApi.getProduct(payload);
-
-    if (response.status) {
-      data = response.data;
-      pagination = response.pagination;
-    }
-  }
-
-  async function deleteData(hashId: string) {
-    blockCard();
-
-    let id = HashHelper.decrypt(hashId);
-
-    let payload = {
-      productId: id,
-    };
-
-    let response = await ProductApi.deleteProduct(payload);
-
-    if (response.status) {
-      notifySuccess(response.message);
-    } else {
-      notifyDanger(response.message);
-    }
-
-    unblockCard();
-
-    isLoading = true;
-
-    await fetchData(1);
-
-    isLoading = false;
-  }
-
   async function handlePageChange(targetPage: number) {
     isLoading = true;
+    page = targetPage;
 
-    await fetchData(targetPage);
+    let result = await fetchData(targetPage, perPage, orderBy, orderType, filterForm);
+
+    data = result.data;
+    pagination = result.pagination;
 
     isLoading = false;
   }
@@ -128,7 +51,10 @@
   async function handlePerPageChange() {
     isLoading = true;
 
-    await fetchData(1);
+    let result = await fetchData(1, perPage, orderBy, orderType, filterForm);
+
+    data = result.data;
+    pagination = result.pagination;
 
     isLoading = false;
   }
@@ -144,8 +70,12 @@
     }
 
     isLoading = true;
+    page = 1;
 
-    await fetchData(1);
+    let result = await fetchData(1, perPage, orderBy, orderType, filterForm);
+
+    data = result.data;
+    pagination = result.pagination;
 
     isLoading = false;
   }
@@ -163,31 +93,41 @@
       },
       confirmButtonText: "Hapus",
       cancelButtonText: "Batal",
-    }).then(async (result: any) => {
+    }).then(async (result: SweetAlertResult) => {
       if (result.isConfirmed) {
         await deleteData(hashId);
+
+        isLoading = true;
+
+        let result = await fetchData(1, perPage, orderBy, orderType, filterForm);
+
+        data = result.data;
+        pagination = result.pagination;
+
+        isLoading = false;
       }
     });
-  }
-
-  function initSelect2() {
-    let jQuery = window.jQuery;
-    let filterProductCategoryIdElemet = jQuery("#filterProductCategoryId");
-
-    loadElementSelect2Modal(filterProductCategoryIdElemet);
   }
 
   onMount(async () => {
     isLoading = true;
 
-    await fetchProductCategory();
-    await fetchData(1);
+    let result = await fetchProductCategory();
+
+    productCategory = result.data;
+
+    result = await fetchData(1, perPage, orderBy, orderType, filterForm);
+
+    data = result.data;
+    pagination = result.pagination;
 
     isLoading = false;
 
     await tick();
     loadRegex();
-    initSelect2();
+    initSelect2((value) => {
+      filterForm.productCategoryId = value;
+    });
   });
 </script>
 
@@ -240,12 +180,14 @@
 
                 <th> Diterbitkan Pada </th>
 
+                <th> Foto </th>
+
                 <th> Aksi </th>
               </tr>
             </thead>
 
             {#if isLoading}
-              <TableSkeleton row={perPage} columns={6} />
+              <TableSkeleton row={perPage} columns={7} />
             {:else}
               <tbody class="text-center">
                 {#if data.length > 0}
@@ -272,6 +214,16 @@
                       </td>
 
                       <td>
+                        {#if row.photo_file_url}
+                          <a class="btn btn-sm btn-info" href={row.photo_file_url} data-lightbox="product-photo" data-title={row.name} aria-label="Lihat Foto">
+                            <i class="icon-base ti tabler-photo"></i>
+                          </a>
+                        {:else}
+                          <span class="text-muted">-</span>
+                        {/if}
+                      </td>
+
+                      <td>
                         <div class="dropdown">
                           <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-label="Menu aksi">
                             <i class="icon-base ti tabler-dots-vertical"></i>
@@ -295,7 +247,7 @@
                   {/each}
                 {:else}
                   <tr>
-                    <td colspan="6" class="text-center">Tidak ada data yang tersedia pada tabel ini</td>
+                    <td colspan="7" class="text-center">Tidak ada data yang tersedia pada tabel ini</td>
                   </tr>
                 {/if}
               </tbody>
@@ -335,7 +287,7 @@
                   <option value="">Pilih Salah Satu</option>
 
                   {#each productCategory as row}
-                    <option value={row.id}>{row.name}</option>
+                    <option value={HashHelper.encrypt(row.id)}>{row.name}</option>
                   {/each}
                 </select>
               </div>

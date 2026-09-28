@@ -1,24 +1,13 @@
-type Select2Element = JQuery<HTMLElement>;
-
-const select2Defaults = {
-  language: "id",
-};
-
-interface Select2OptionData {
-  element?: HTMLElement;
-  text: string;
-}
-
 function loadSelect2() {
   let jQuery = window.jQuery;
   let select2Element = jQuery(".select2");
 
   if (select2Element.length > 0) {
-    select2Element.each(function () {
+    select2Element.each(function (this: any) {
       let element = jQuery(this);
 
       element.wrap('<div class="position-relative"></div>').select2({
-        ...select2Defaults,
+        language: "id",
         allowClear: true,
         placeholder: "Pilih Salah Satu",
         dropdownParent: element.parent(),
@@ -27,9 +16,9 @@ function loadSelect2() {
   }
 }
 
-function loadElementSelect2(element: Select2Element) {
+function loadElementSelect2(element: any) {
   element.wrap('<div class="position-relative"></div>').select2({
-    ...select2Defaults,
+    language: "id",
     allowClear: true,
     placeholder: "Pilih Salah Satu",
     dropdownParent: element.parent(),
@@ -41,11 +30,11 @@ function loadSelect2Image() {
   let select2ImageElement = jQuery(".select2-image");
 
   if (select2ImageElement.length > 0) {
-    select2ImageElement.each(function () {
+    select2ImageElement.each(function (this: any) {
       let element = jQuery(this);
 
       element.wrap('<div class="position-relative"></div>').select2({
-        ...select2Defaults,
+        language: "id",
         allowClear: true,
         placeholder: "Pilih Salah Satu",
         templateResult: _renderImageOption,
@@ -59,9 +48,9 @@ function loadSelect2Image() {
   }
 }
 
-function loadElementSelect2Image(element: Select2Element) {
+function loadElementSelect2Image(element: any) {
   element.wrap('<div class="position-relative"></div>').select2({
-    ...select2Defaults,
+    language: "id",
     allowClear: true,
     placeholder: "Pilih Salah Satu",
     templateResult: _renderImageOption,
@@ -75,11 +64,11 @@ function loadSelect2Multiple() {
   let selectMultipleElement = jQuery(".select2-multiple");
 
   if (selectMultipleElement.length > 0) {
-    selectMultipleElement.each(function () {
+    selectMultipleElement.each(function (this: any) {
       let element = jQuery(this);
 
       element.wrap('<div class="position-relative"></div>').select2({
-        ...select2Defaults,
+        language: "id",
         placeholder: "Pilih Beberapa",
         multiple: true,
         width: "100%",
@@ -91,9 +80,9 @@ function loadSelect2Multiple() {
   }
 }
 
-function loadElementSelect2Multiple(element: Select2Element) {
+function loadElementSelect2Multiple(element: any) {
   element.wrap('<div class="position-relative"></div>').select2({
-    ...select2Defaults,
+    language: "id",
     placeholder: "Pilih Beberapa",
     multiple: true,
     width: "100%",
@@ -108,11 +97,11 @@ function loadSelect2Modal() {
   let selectModalElement = jQuery(".select2-modal");
 
   if (selectModalElement.length > 0) {
-    selectModalElement.each(function () {
+    selectModalElement.each(function (this: any) {
       let element = jQuery(this);
 
       element.select2({
-        ...select2Defaults,
+        language: "id",
         allowClear: true,
         placeholder: "Pilih Salah Satu",
         dropdownParent: element.parent(),
@@ -121,12 +110,12 @@ function loadSelect2Modal() {
   }
 }
 
-function loadElementSelect2Modal(element: Select2Element) {
+function loadElementSelect2Modal(element: any) {
   let jQuery = window.jQuery;
   let modal = element.closest(".modal");
 
   element.select2({
-    ...select2Defaults,
+    language: "id",
     allowClear: true,
     placeholder: "Pilih Salah Satu",
     dropdownParent: modal.length ? modal : element.parent(),
@@ -138,7 +127,7 @@ function loadSelect2MultipleModal() {
   let selectMultipleModalElement = jQuery(".select2-multiple-modal");
 
   if (selectMultipleModalElement.length > 0) {
-    selectMultipleModalElement.each(function () {
+    selectMultipleModalElement.each(function (this: any) {
       let element = jQuery(this);
 
       let modal = element.closest(".modal");
@@ -149,7 +138,7 @@ function loadSelect2MultipleModal() {
         }
 
         element.select2({
-          ...select2Defaults,
+          language: "id",
           placeholder: "Pilih Beberapa",
           multiple: true,
           width: "100%",
@@ -168,7 +157,7 @@ function loadSelect2MultipleModal() {
   }
 }
 
-function loadElementSelect2MultipleModal(element: Select2Element) {
+function loadElementSelect2MultipleModal(element: any) {
   let modal = element.closest(".modal");
 
   let initSelect2 = () => {
@@ -177,7 +166,7 @@ function loadElementSelect2MultipleModal(element: Select2Element) {
     }
 
     element.select2({
-      ...select2Defaults,
+      language: "id",
       placeholder: "Pilih Beberapa",
       multiple: true,
       width: "100%",
@@ -198,7 +187,7 @@ function loadElementSelect2MultipleModal(element: Select2Element) {
 // * Private Function
 // * =========================================================================================================================
 
-function _renderImageOption(option: Select2OptionData) {
+function _renderImageOption(option: { element: HTMLElement; text: string }) {
   let jQuery = window.jQuery;
 
   if (!option.element || !jQuery(option.element).data("image")) {
@@ -210,7 +199,7 @@ function _renderImageOption(option: Select2OptionData) {
   return $image;
 }
 
-function _bindSelect2MultipleBackspaceFix(element: Select2Element) {
+function _bindSelect2MultipleBackspaceFix(element: any) {
   let syncSearchField = () => {
     let select2Instance = element.data("select2");
 

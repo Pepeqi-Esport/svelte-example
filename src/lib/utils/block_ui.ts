@@ -1,3 +1,15 @@
+import { Block } from "notiflix";
+
+let customSpinnerHTML = `
+	<div class="sk-wave mx-auto">
+		<div class="sk-rect sk-wave-rect"></div>
+		<div class="sk-rect sk-wave-rect"></div>
+		<div class="sk-rect sk-wave-rect"></div>
+		<div class="sk-rect sk-wave-rect"></div>
+		<div class="sk-rect sk-wave-rect"></div>
+	</div>
+`;
+
 function getBlockBackgroundColor() {
   let isDarkMode = false;
 
@@ -11,16 +23,6 @@ function getBlockBackgroundColor() {
 
   return `rgba(${window.Helpers.getCssVar('black-rgb')}, 0.5)`;
 }
-
-let customSpinnerHTML = `
-	<div class="sk-wave mx-auto">
-		<div class="sk-rect sk-wave-rect"></div>
-		<div class="sk-rect sk-wave-rect"></div>
-		<div class="sk-rect sk-wave-rect"></div>
-		<div class="sk-rect sk-wave-rect"></div>
-		<div class="sk-rect sk-wave-rect"></div>
-	</div>
-`;
 
 function applyCustomSpinner(selector: string) {
   let notiflixBlockElement = document.querySelector(`${selector} .notiflix-block`);
