@@ -3,18 +3,17 @@
 
   import { cardAnimate } from "$lib/utils/animate";
 
-  import { createData } from "./action";
-  import { initFormValidation } from "./init";
+  import { validateForm, createData } from "./create";
 
-  let createForm = $state({
+  let form = $state({
     name: "",
     description: "",
   });
 
-  let fv: ReturnType<typeof initFormValidation> = null;
-
   onMount(() => {
-    fv = initFormValidation(async () => await createData(createForm, fv));
+    validateForm(async () => {
+      await createData(form);
+    });
   });
 </script>
 
@@ -46,7 +45,7 @@
               <div class="mb-3">
                 <label class="form-label" for="name"> Nama </label>
 
-                <input type="text" class="form-control" name="name" id="name" bind:value={createForm.name} placeholder="Masukkan Nama" autocomplete="off" />
+                <input type="text" class="form-control" name="name" id="name" bind:value={form.name} placeholder="Masukkan Nama" autocomplete="off" />
               </div>
             </div>
 
@@ -58,7 +57,7 @@
                   class="form-control"
                   name="description"
                   id="description"
-                  bind:value={createForm.description}
+                  bind:value={form.description}
                   placeholder="Masukkan Deskripsi"
                   autocomplete="off"
                   cols="30"

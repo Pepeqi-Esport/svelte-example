@@ -2,43 +2,39 @@
   import { onMount } from "svelte";
 
   import { page } from "$app/state";
+
   import InputSkeleton from "$lib/components/InputSkeleton.svelte";
   import TextareaSkeleton from "$lib/components/TextareaSkeleton.svelte";
 
-  import HashHelper from "$lib/helpers/hash_helper";
-
   import { cardAnimate } from "$lib/utils/animate";
 
-  import { fetchData, updateData } from "./action";
-  import { initFormValidation } from "./init";
+  import { validateForm, fetchData, updateData } from "./edit";
 
   let isLoading = $state(true);
 
-  let editForm = $state({
-    productCategoryId: 0,
+  let form = $state({
+    productCategoryId: "",
     name: "",
     description: "",
   });
 
-  let fv: ReturnType<typeof initFormValidation> = null;
-
   if (page.params.productCategoryId) {
-    let productCategoryId = HashHelper.decrypt(page.params.productCategoryId);
-
-    editForm.productCategoryId = productCategoryId;
+    form.productCategoryId = page.params.productCategoryId;
   }
 
   onMount(async () => {
     isLoading = true;
 
-    let result = await fetchData(editForm.productCategoryId);
+    let result = await fetchData(form.productCategoryId);
 
-    editForm.name = result.data.name;
-    editForm.description = result.data.description;
+    form.name = result.data.name;
+    form.description = result.data.description;
 
     isLoading = false;
 
-    initFormValidation(async () => await updateData(editForm, fv));
+    validateForm(async () => {
+      await updateData(form);
+    });
   });
 </script>
 
@@ -73,7 +69,7 @@
                 {#if isLoading}
                   <InputSkeleton />
                 {:else}
-                  <input type="text" class="form-control" name="name" id="name" bind:value={editForm.name} placeholder="Masukkan Nama" autocomplete="off" />
+                  <input type="text" class="form-control" name="name" id="name" bind:value={form.name} placeholder="Masukkan Nama" autocomplete="off" />
                 {/if}
               </div>
             </div>
@@ -89,7 +85,7 @@
                     class="form-control"
                     name="description"
                     id="description"
-                    bind:value={editForm.description}
+                    bind:value={form.description}
                     placeholder="Masukkan Deskripsi"
                     autocomplete="off"
                     cols="30"

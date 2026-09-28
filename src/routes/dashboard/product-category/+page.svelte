@@ -9,49 +9,56 @@
 
   import { cardAnimate } from "$lib/utils/animate";
 
-  import { deleteData, fetchData } from "./action";
+  import { deleteData, fetchData } from ".";
 
   let isLoading = $state(true);
 
-  let data = $state<any[]>([]);
-  let pagination = $state<any>({});
+  let table = $state({
+    data: <any[]>[],
+    pagination: <any>{},
+  });
 
-  let page = $state(1);
-  let perPage = $state(10);
-  let orderBy = $state("name");
-  let orderType = $state("asc");
-  let lastPage = $derived(Number(pagination.last_page) || 1);
-  let total = $derived(Number(pagination.total) || 0);
+  let tableRequest = $state({
+    page: 1,
+    perPage: 10,
+    orderBy: "name",
+    orderType: "asc",
+    filter: {
+      name: "",
+    },
+  });
 
-  let filterForm = $state({
-    name: "",
+  let tableSummary = $derived({
+    lastPage: Number(table.pagination.last_page) || 1,
+    total: Number(table.pagination.total) || 0,
   });
 
   async function handlePerPageChange() {
     isLoading = true;
+    tableRequest.page = 1;
 
-    let result = await fetchData(1, perPage, orderBy, orderType, filterForm);
+    let result = await fetchData(tableRequest.page, tableRequest.perPage, tableRequest.orderBy, tableRequest.orderType, tableRequest.filter);
 
-    data = result.data;
-    pagination = result.pagination;
+    table.data = result.data;
+    table.pagination = result.pagination;
 
     isLoading = false;
   }
 
   async function handlePageChange(targetPage: number) {
     isLoading = true;
-    page = targetPage;
+    tableRequest.page = targetPage;
 
-    let result = await fetchData(targetPage, perPage, orderBy, orderType, filterForm);
+    let result = await fetchData(tableRequest.page, tableRequest.perPage, tableRequest.orderBy, tableRequest.orderType, tableRequest.filter);
 
-    data = result.data;
-    pagination = result.pagination;
+    table.data = result.data;
+    table.pagination = result.pagination;
 
     isLoading = false;
   }
 
-  async function handleFilter(e: SubmitEvent) {
-    e.preventDefault();
+  async function handleFilter(event: SubmitEvent) {
+    event.preventDefault();
 
     let filterModal = document.getElementById("filterModal");
 
@@ -61,17 +68,17 @@
     }
 
     isLoading = true;
-    page = 1;
+    tableRequest.page = 1;
 
-    let result = await fetchData(1, perPage, orderBy, orderType, filterForm);
+    let result = await fetchData(tableRequest.page, tableRequest.perPage, tableRequest.orderBy, tableRequest.orderType, tableRequest.filter);
 
-    data = result.data;
-    pagination = result.pagination;
+    table.data = result.data;
+    table.pagination = result.pagination;
 
     isLoading = false;
   }
 
-  async function handleDelete(hashId: string) {
+  async function handleDelete(productCategoryId: string) {
     Swal.fire({
       icon: "question",
       text: "Apakah Anda yakin ingin menghapus data ini ?",
@@ -86,14 +93,15 @@
       cancelButtonText: "Batal",
     }).then(async (result: SweetAlertResult) => {
       if (result.isConfirmed) {
-        await deleteData(hashId);
+        await deleteData(productCategoryId);
 
         isLoading = true;
+        tableRequest.page = 1;
 
-        let result = await fetchData(1, perPage, orderBy, orderType, filterForm);
+        let result = await fetchData(tableRequest.page, tableRequest.perPage, tableRequest.orderBy, tableRequest.orderType, tableRequest.filter);
 
-        data = result.data;
-        pagination = result.pagination;
+        table.data = result.data;
+        table.pagination = result.pagination;
 
         isLoading = false;
       }
@@ -103,10 +111,10 @@
   onMount(async () => {
     isLoading = true;
 
-    let result = await fetchData(1, perPage, orderBy, orderType, filterForm);
+    let result = await fetchData(tableRequest.page, tableRequest.perPage, tableRequest.orderBy, tableRequest.orderType, tableRequest.filter);
 
-    data = result.data;
-    pagination = result.pagination;
+    table.data = result.data;
+    table.pagination = result.pagination;
 
     isLoading = false;
   });
@@ -137,7 +145,7 @@
         <div class="d-flex align-items-center gap-2">
           <label class="form-label mb-0" for="perPage">Tampilkan</label>
 
-          <select class="form-select w-auto" id="perPage" bind:value={perPage} onchange={handlePerPageChange}>
+          <select class="form-select w-auto" id="perPage" bind:value={tableRequest.perPage} onchange={handlePerPageChange}>
             <option value={1}>1</option>
             <option value={10}>10</option>
             <option value={25}>25</option>
@@ -161,11 +169,11 @@
             </thead>
 
             {#if isLoading}
-              <TableSkeleton row={perPage} columns={3} />
+              <TableSkeleton row={tableRequest.perPage} columns={3} />
             {:else}
               <tbody class="text-center">
-                {#if data.length > 0}
-                  {#each data as row, index}
+                {#if table.data.length > 0}
+                  {#each table.data as row, index}
                     <tr>
                       <td class="text-center">
                         {index + 1}
@@ -209,7 +217,13 @@
       </div>
 
       <div class="card-footer">
-        <PaginationTable {isLoading} {page} {perPage} {lastPage} {total} fetchData={handlePageChange} />
+        <PaginationTable
+          {isLoading}
+          page={tableRequest.page}
+          perPage={tableRequest.perPage}
+          lastPage={tableSummary.lastPage}
+          total={tableSummary.total}
+          fetchData={handlePageChange} />
       </div>
     </div>
   </div>
@@ -236,7 +250,7 @@
                   class="form-control"
                   name="filter[name]"
                   id="filterName"
-                  bind:value={filterForm.name}
+                  bind:value={tableRequest.filter.name}
                   placeholder="Masukkan Nama"
                   autocomplete="off" />
               </div>

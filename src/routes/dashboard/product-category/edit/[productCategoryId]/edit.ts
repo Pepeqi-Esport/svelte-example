@@ -6,9 +6,17 @@ import { Trigger } from "@form-validation/plugin-trigger";
 import { callback } from "@form-validation/validator-callback";
 import { emailAddress } from "@form-validation/validator-email-address";
 import { notEmpty } from "@form-validation/validator-not-empty";
+import Swal, { type SweetAlertResult } from "sweetalert2";
 
-function initFormValidation(onValid: () => void | Promise<void>) {
-  const form = document.getElementById("createForm");
+import ProductCategoryApi from "$lib/api/product_category_api";
+
+import HashHelper from "$lib/helpers/hash_helper";
+
+import { blockCard, unblockCard } from "$lib/utils/block_ui";
+import { notifyDanger, notifySuccess } from "$lib/utils/izi_toast";
+
+function validateForm(onValid: () => void | Promise<void>) {
+  const form = document.getElementById("editForm");
 
   if (!form) {
     return null;
@@ -57,4 +65,52 @@ function initFormValidation(onValid: () => void | Promise<void>) {
   });
 }
 
-export { initFormValidation };
+async function fetchData(id: string) {
+  let productCategoryId = HashHelper.decrypt(id);
+
+  let payload = {
+    productCategoryId: productCategoryId,
+  };
+
+  let response = await ProductCategoryApi.detailProductCategory(payload);
+
+  return response;
+}
+
+async function updateData(form: Record<any, any>) {
+  Swal.fire({
+    icon: "question",
+    text: "Apakah Anda yakin ingin menyimpan data ini ?",
+    showCancelButton: true,
+    buttonsStyling: false,
+    reverseButtons: true,
+    customClass: {
+      confirmButton: "btn btn-primary",
+      cancelButton: "btn btn-secondary",
+    },
+    confirmButtonText: "Simpan",
+    cancelButtonText: "Batal",
+  }).then(async (result: SweetAlertResult) => {
+    if (result.isConfirmed) {
+      blockCard();
+
+      let productCategoryId = HashHelper.decrypt(form.productCategoryId);
+
+      let result = await ProductCategoryApi.updateProductCategory({
+        productCategoryId: productCategoryId,
+        name: form.name,
+        description: form.description,
+      });
+
+      unblockCard();
+
+      if (result.status) {
+        notifySuccess(result.message);
+      } else {
+        notifyDanger(result.error[0].message);
+      }
+    }
+  });
+}
+
+export { validateForm, fetchData, updateData };

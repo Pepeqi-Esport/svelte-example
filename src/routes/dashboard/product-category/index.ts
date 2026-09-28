@@ -2,15 +2,16 @@ import ProductCategoryApi from "$lib/api/product_category_api";
 
 import CheckHelper from "$lib/helpers/check_helper";
 import HashHelper from "$lib/helpers/hash_helper";
+
 import { blockCard, unblockCard } from "$lib/utils/block_ui";
 
 import { notifyDanger, notifySuccess } from "$lib/utils/izi_toast";
 
-async function fetchData(page: number, perPage: number, orderBy: string, orderType: string, filterForm: Record<any, any>) {
+async function fetchData(page: number, perPage: number, orderBy: string, orderType: string, filter: Record<any, any>) {
   let filterPayload: Record<any, any> = {};
 
-  if (CheckHelper.isset(filterForm.name)) {
-    filterPayload.name = filterForm.name;
+  if (CheckHelper.isset(filter.name)) {
+    filterPayload.name = filter.name;
   }
 
   let payload = {
@@ -29,11 +30,11 @@ async function fetchData(page: number, perPage: number, orderBy: string, orderTy
   return response;
 }
 
-async function deleteData(hashId: string) {
-  let id = HashHelper.decrypt(hashId);
+async function deleteData(id: string) {
+  let productCategoryId = HashHelper.decrypt(id);
 
   let payload = {
-    productCategoryId: id,
+    productCategoryId: productCategoryId,
   };
 
   blockCard();

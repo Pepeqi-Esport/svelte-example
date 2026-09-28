@@ -3,19 +3,23 @@
 
   import { cardAnimate } from "$lib/utils/animate";
 
-  import { fetchData } from "./action";
+  import { fetchData } from "./home";
 
   let isLoading = $state(true);
-  let productCount = $state(0);
-  let productCategoryCount = $state(0);
+
+  let summary = $state({
+    product: 0,
+    productCategory: 0,
+  });
 
   onMount(async () => {
     isLoading = true;
 
     let data = await fetchData();
 
-    productCount = data.productCount;
-    productCategoryCount = data.productCategoryCount;
+    summary.product = data.product;
+    summary.productCategory = data.productCategory;
+
     isLoading = false;
   });
 </script>
@@ -37,7 +41,7 @@
                   <span class="placeholder col-12" aria-hidden="true"></span>
                 </span>
               {:else}
-                {productCategoryCount}
+                {summary.productCategory}
               {/if}
             </h5>
 
@@ -64,7 +68,7 @@
                   <span class="placeholder col-12" aria-hidden="true"></span>
                 </span>
               {:else}
-                {productCount}
+                {summary.product}
               {/if}
             </h5>
 

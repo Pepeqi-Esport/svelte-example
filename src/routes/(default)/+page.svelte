@@ -2,18 +2,18 @@
   import { onMount } from "svelte";
 
   import { cardAnimate } from "$lib/utils/animate";
-  import { authenticate, visiblePassword } from "./action";
-  import { initFormValidation } from "./init";
 
-  let loginForm = $state({
+  import { validateForm, authenticate, visiblePassword } from "./login";
+
+  let form = $state({
     email: "",
     password: "",
   });
 
-  let fv: ReturnType<typeof initFormValidation> = null;
-
   onMount(() => {
-    fv = initFormValidation(async () => await authenticate(loginForm, fv));
+    validateForm(async () => {
+      await authenticate(form);
+    });
   });
 </script>
 
@@ -33,7 +33,7 @@
               <div class="mb-3">
                 <label class="form-label" for="email">Email</label>
 
-                <input type="email" class="form-control" name="email" id="email" bind:value={loginForm.email} placeholder="Masukkan Email" autocomplete="off" />
+                <input type="email" class="form-control" name="email" id="email" bind:value={form.email} placeholder="Masukkan Email" autocomplete="off" />
               </div>
             </div>
 
@@ -47,7 +47,7 @@
                     class="form-control"
                     name="password"
                     id="password"
-                    bind:value={loginForm.password}
+                    bind:value={form.password}
                     placeholder="············"
                     data-original-type="password"
                     autocomplete="off" />

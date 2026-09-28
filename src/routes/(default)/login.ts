@@ -7,14 +7,23 @@ import { callback } from "@form-validation/validator-callback";
 import { emailAddress } from "@form-validation/validator-email-address";
 import { notEmpty } from "@form-validation/validator-not-empty";
 
-function initFormValidation(onValid: () => void | Promise<void>) {
-  const form = document.getElementById("loginForm");
+import { goto } from "$app/navigation";
 
-  if (!form) {
+import AuthApi from "$lib/api/auth_api";
+
+import AuthHelper from "$lib/helpers/auth_helper";
+
+import { blockCard, unblockCard } from "$lib/utils/block_ui";
+import { notifyDanger } from "$lib/utils/izi_toast";
+
+function validateForm(onValid: () => void) {
+  let loginFormDocumentElement = document.getElementById("loginForm");
+
+  if (!loginFormDocumentElement) {
     return null;
   };
 
-  return formValidation(form, {
+  return formValidation(loginFormDocumentElement, {
     fields: {
       email: {
         validators: {
@@ -56,8 +65,49 @@ function initFormValidation(onValid: () => void | Promise<void>) {
       });
     },
   }).on("core.form.valid", async () => {
-    await onValid();
+    onValid();
   });
 }
 
-export { initFormValidation };
+async function authenticate(form: Record<any, any>) {
+  blockCard();
+
+  let result = await AuthApi.login({
+    email: form.email,
+    password: form.password,
+  });
+
+  unblockCard();
+
+  if (result.status) {
+    let user = result.data;
+    let token = result.token.access_token;
+    let expiredAt = result.token.expired_at;
+
+    AuthHelper.saveSession(user, token, expiredAt);
+
+    await goto("/dashboard/home");
+  } else {
+    notifyDanger(result.error[0].message);
+  }
+}
+
+function visiblePassword() {
+  let jQuery = window.jQuery;
+
+  let passwordElement = jQuery("#password");
+  let passwordIconElement = jQuery("#password-icon");
+  let originalType = passwordElement.data("original-type");
+
+  if (originalType == "password") {
+    passwordElement.attr("type", "text");
+    passwordElement.data("original-type", "text");
+    passwordIconElement.attr("class", "icon-base ti tabler-eye");
+  } else {
+    passwordElement.attr("type", "password");
+    passwordElement.data("original-type", "password");
+    passwordIconElement.attr("class", "icon-base ti tabler-eye-off");
+  }
+}
+
+export { validateForm, authenticate, visiblePassword };
