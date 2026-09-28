@@ -13,48 +13,54 @@
   import { loadRegex } from "$lib/utils/regex";
   import "$lib/utils/select2_translation";
 
-  import { deleteData, fetchData, fetchProductCategory } from "./action";
-  import { initSelect2 } from "./init";
+  import { fetchProductCategory, fetchData, deleteData, productCategorySelect2 } from "./index";
 
   let isLoading = $state(true);
 
   let productCategory = $state<any[]>([]);
 
-  let data = $state<any[]>([]);
-  let pagination = $state<any>({});
+  let table = $state({
+    data: <any[]>[],
+    pagination: <any>{},
+  });
 
-  let page = $state(1);
-  let perPage = $state(10);
-  let orderBy = $state("name");
-  let orderType = $state("asc");
-  let lastPage = $derived(Number(pagination.last_page) || 1);
-  let total = $derived(Number(pagination.total) || 0);
+  let tableRequest = $state({
+    page: 1,
+    perPage: 10,
+    orderBy: "name",
+    orderType: "asc",
+    filter: {
+      productCategoryId: "",
+      name: "",
+      price: "",
+    },
+  });
 
-  let filterForm = $state({
-    productCategoryId: "",
-    name: "",
-    price: "",
+  let tableSummary = $derived({
+    lastPage: Number(table.pagination.last_page) || 1,
+    total: Number(table.pagination.total) || 0,
   });
 
   async function handlePageChange(targetPage: number) {
     isLoading = true;
-    page = targetPage;
+    tableRequest.page = targetPage;
 
-    let result = await fetchData(targetPage, perPage, orderBy, orderType, filterForm);
+    let result = await fetchData(tableRequest.page, tableRequest.perPage, tableRequest.orderBy, tableRequest.orderType, tableRequest.filter);
 
-    data = result.data;
-    pagination = result.pagination;
+    table.data = result.data;
+    table.pagination = result.pagination;
 
     isLoading = false;
   }
 
   async function handlePerPageChange() {
     isLoading = true;
+    tableRequest.page = 1;
 
-    let result = await fetchData(1, perPage, orderBy, orderType, filterForm);
+    let result = await fetchData(tableRequest.page, tableRequest.perPage, tableRequest.orderBy, tableRequest.orderType, tableRequest.filter);
 
-    data = result.data;
-    pagination = result.pagination;
+    table.data = result.data;
+    table.pagination = result.pagination;
 
     isLoading = false;
   }
@@ -70,17 +76,17 @@
     }
 
     isLoading = true;
-    page = 1;
+    tableRequest.page = 1;
 
-    let result = await fetchData(1, perPage, orderBy, orderType, filterForm);
+    let result = await fetchData(tableRequest.page, tableRequest.perPage, tableRequest.orderBy, tableRequest.orderType, tableRequest.filter);
 
-    data = result.data;
-    pagination = result.pagination;
+    table.data = result.data;
+    table.pagination = result.pagination;
 
     isLoading = false;
   }
 
-  async function handleDelete(hashId: string) {
+  async function handleDelete(productId: string) {
     Swal.fire({
       icon: "question",
       text: "Apakah Anda yakin ingin menghapus data ini ?",
@@ -95,14 +101,15 @@
       cancelButtonText: "Batal",
     }).then(async (result: SweetAlertResult) => {
       if (result.isConfirmed) {
-        await deleteData(hashId);
+        await deleteData(productId);
 
         isLoading = true;
+        tableRequest.page = 1;
 
-        let result = await fetchData(1, perPage, orderBy, orderType, filterForm);
+        let result = await fetchData(tableRequest.page, tableRequest.perPage, tableRequest.orderBy, tableRequest.orderType, tableRequest.filter);
 
-        data = result.data;
-        pagination = result.pagination;
+        table.data = result.data;
+        table.pagination = result.pagination;
 
         isLoading = false;
       }
@@ -116,18 +123,18 @@
 
     productCategory = result.data;
 
-    result = await fetchData(1, perPage, orderBy, orderType, filterForm);
+    result = await fetchData(tableRequest.page, tableRequest.perPage, tableRequest.orderBy, tableRequest.orderType, tableRequest.filter);
 
-    data = result.data;
-    pagination = result.pagination;
+    table.data = result.data;
+    table.pagination = result.pagination;
 
     isLoading = false;
 
     await tick();
+
     loadRegex();
-    initSelect2((value) => {
-      filterForm.productCategoryId = value;
-    });
+
+    productCategorySelect2(tableRequest);
   });
 </script>
 
@@ -156,7 +163,7 @@
         <div class="d-flex align-items-center gap-2">
           <label class="form-label mb-0" for="perPage">Tampilkan</label>
 
-          <select class="form-select w-auto" id="perPage" bind:value={perPage} onchange={handlePerPageChange}>
+          <select class="form-select w-auto" id="perPage" bind:value={tableRequest.perPage} onchange={handlePerPageChange}>
             <option value={10}>10</option>
             <option value={25}>25</option>
             <option value={50}>50</option>
@@ -187,11 +194,11 @@
             </thead>
 
             {#if isLoading}
-              <TableSkeleton row={perPage} columns={7} />
+              <TableSkeleton row={tableRequest.perPage} columns={7} />
             {:else}
               <tbody class="text-center">
-                {#if data.length > 0}
-                  {#each data as row, index}
+                {#if table.data.length > 0}
+                  {#each table.data as row, index}
                     <tr>
                       <td class="text-center">
                         {index + 1}
@@ -257,7 +264,13 @@
       </div>
 
       <div class="card-footer">
-        <PaginationTable {isLoading} {page} {perPage} {lastPage} {total} fetchData={handlePageChange} />
+        <PaginationTable
+          {isLoading}
+          page={tableRequest.page}
+          perPage={tableRequest.perPage}
+          lastPage={tableSummary.lastPage}
+          total={tableSummary.total}
+          fetchData={handlePageChange} />
       </div>
     </div>
   </div>
@@ -283,7 +296,7 @@
                   class="form-select select2-modal"
                   name="filter[productCategoryId]"
                   id="filterProductCategoryId"
-                  bind:value={filterForm.productCategoryId}>
+                  bind:value={tableRequest.filter.productCategoryId}>
                   <option value="">Pilih Salah Satu</option>
 
                   {#each productCategory as row}
@@ -302,7 +315,7 @@
                   class="form-control"
                   name="filter[name]"
                   id="filterName"
-                  bind:value={filterForm.name}
+                  bind:value={tableRequest.filter.name}
                   placeholder="Masukkan Nama"
                   autocomplete="off" />
               </div>
@@ -320,15 +333,15 @@
                     class="form-control regex-number"
                     name="filter[price]"
                     id="filterPrice"
-                    bind:value={filterForm.price}
+                    bind:value={tableRequest.filter.price}
                     onkeyup={(e) => {
                       formatNumberElement(e.currentTarget);
-                      filterForm.price = (e.currentTarget as HTMLInputElement).value;
+                      tableRequest.filter.price = (e.currentTarget as HTMLInputElement).value;
                     }}
                     onpaste={(e) => {
                       setTimeout(() => {
                         formatNumberElement(e.currentTarget);
-                        filterForm.price = (e.currentTarget as HTMLInputElement).value;
+                        tableRequest.filter.price = (e.currentTarget as HTMLInputElement).value;
                       }, 0);
                     }}
                     placeholder="Masukkan Harga"
