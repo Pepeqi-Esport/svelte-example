@@ -1,42 +1,63 @@
-# sv
+# Svelte Example Documentation
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+## Overview
 
-## Creating a project
+This document outlines the setup and structure of Svelte Example. This apps are using :
+* Vuexy 10.11.1 as main template
+* Svelte 5 as main framework
 
-If you're seeing this, you've probably already done this step. Congrats!
+## System Requirements
 
-```sh
-# create a new project
-npx sv create my-app
+* Node Js 24.0 or higher
+
+## Installation Steps
+
+* Clone the project and move to project directory
+
+```bash
+https://github.com/Pepeqi-Esport/svelte-example.git
 ```
 
-To recreate this project with the same configuration:
+* Install dependencies
 
-```sh
-# recreate this project
-npx sv@0.17.0 create --template minimal --types ts --install yarn svelte-example
+```bash
+bun install
 ```
 
-## Developing
+* Decrypt the env with your own key
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+```bash
+bun env:decrypt --key=your-own-key
 ```
 
-## Building
+* Decrypt the production env with your own key
 
-To create a production version of your app:
-
-```sh
-npm run build
+```bash
+bun env:decrypt --key=your-own-key --env=production
 ```
 
-You can preview the production build with `npm run preview`.
+* Build Application
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+```bash
+bun run build
+```
+
+* Run Application in Development
+
+```bash
+bun dev
+```
+
+* Run Application in Production
+
+```bash
+pm2 start ecosystem.config.cjs
+```
+
+## Contributing
+
+Contributions to the Svelte Example project are welcome.
+
+## License
+
+This Svelte Example is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
