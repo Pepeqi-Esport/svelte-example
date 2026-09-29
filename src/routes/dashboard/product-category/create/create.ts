@@ -1,26 +1,12 @@
-import { formValidation } from "@form-validation/core";
-import { Bootstrap5 } from "@form-validation/plugin-bootstrap5";
-import type { FrameworkOptions } from "@form-validation/plugin-framework";
-import { SubmitButton } from "@form-validation/plugin-submit-button";
-import { Trigger } from "@form-validation/plugin-trigger";
-import { callback } from "@form-validation/validator-callback";
-import { emailAddress } from "@form-validation/validator-email-address";
-import { notEmpty } from "@form-validation/validator-not-empty";
-import Swal, { type SweetAlertResult } from "sweetalert2";
-
 import ProductCategoryApi from "$lib/api/product_category_api";
 
 import { blockCard, unblockCard } from "$lib/utils/block_ui";
 import { notifyDanger, notifySuccess } from "$lib/utils/izi_toast";
 
-function validateForm(onValid: () => void | Promise<void>) {
+function validateForm(form: Record<any, any>) {
   let createFormDocumentElement = document.getElementById("createForm");
 
-  if (!createFormDocumentElement) {
-    return null;
-  };
-
-  return formValidation(createFormDocumentElement, {
+  FormValidation.formValidation(createFormDocumentElement, {
     fields: {
       name: {
         validators: {
@@ -39,68 +25,60 @@ function validateForm(onValid: () => void | Promise<void>) {
       },
     },
     plugins: {
-      bootstrap5: new Bootstrap5({
+      bootstrap5: new FormValidation.plugins.Bootstrap5({
         eleValidClass: "",
         rowSelector: ".mb-3",
-      } as FrameworkOptions),
-      trigger: new Trigger(),
-      submitButton: new SubmitButton(),
+      }),
+      defaultSubmit: new FormValidation.plugins.DefaultSubmit(),
+      trigger: new FormValidation.plugins.Trigger(),
+      submitButton: new FormValidation.plugins.SubmitButton(),
     },
-    init: (instance) => {
-      instance.registerValidator("callback", callback);
-      instance.registerValidator("emailAddress", emailAddress);
-      instance.registerValidator("notEmpty", notEmpty);
-
-      instance.on("plugins.message.placed", (e) => {
-        const event = e as { element: HTMLElement; messageElement: HTMLElement };
-        if (event.element.parentElement?.classList.contains("input-group")) {
-          event.element.parentElement.insertAdjacentElement("afterend", event.messageElement);
+    init: (instance: { on: (event: string, handler: (e: { element: HTMLElement; messageElement: HTMLElement }) => void) => void }) => {
+      instance.on("plugins.message.placed", function (e) {
+        if (e.element.parentElement?.classList.contains("input-group")) {
+          e.element.parentElement.insertAdjacentElement("afterend", e.messageElement);
         }
       });
     },
-  }).on("core.form.valid", async () => {
-    await onValid();
-  });
-}
+  }).on("core.form.valid", async function () {
+    Swal.fire({
+      icon: "question",
+      text: "Apakah Anda yakin ingin menyimpan data ini ?",
+      showCancelButton: true,
+      buttonsStyling: false,
+      reverseButtons: true,
+      customClass: {
+        confirmButton: "btn btn-primary",
+        cancelButton: "btn btn-secondary",
+      },
+      confirmButtonText: "Simpan",
+      cancelButtonText: "Batal",
+    }).then(async (result: any) => {
+      if (result.isConfirmed) {
+        blockCard();
 
-async function createData(createForm: Record<any, any>) {
-  Swal.fire({
-    icon: "question",
-    text: "Apakah Anda yakin ingin menyimpan data ini ?",
-    showCancelButton: true,
-    buttonsStyling: false,
-    reverseButtons: true,
-    customClass: {
-      confirmButton: "btn btn-primary",
-      cancelButton: "btn btn-secondary",
-    },
-    confirmButtonText: "Simpan",
-    cancelButtonText: "Batal",
-  }).then(async (result: SweetAlertResult) => {
-    if (result.isConfirmed) {
-      blockCard();
+        let result = await ProductCategoryApi.createProductCategory({
+          name: form.name,
+          description: form.description,
+        });
 
-      let result = await ProductCategoryApi.createProductCategory({
-        name: createForm.name,
-        description: createForm.description,
-      });
+        unblockCard();
 
-      unblockCard();
+        if (result.status) {
+          notifySuccess(result.message);
 
-      if (result.status) {
-        notifySuccess(result.message);
-
-        resetForm(createForm);
-      } else {
-        notifyDanger(result.error[0].message);
+          resetForm(form);
+        } else {
+          notifyDanger(result.error[0].message);
+        }
       }
-    }
+    });
   });
 }
 
-function resetForm(createForm: Record<any, any>) {
-  createForm.name = "";
-  createForm.description = "";
+function resetForm(form: Record<any, any>) {
+  form.name = "";
+  form.description = "";
 }
 
-export { validateForm, createData, resetForm };
+export { validateForm, resetForm };

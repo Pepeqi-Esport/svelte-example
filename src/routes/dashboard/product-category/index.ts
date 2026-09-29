@@ -7,19 +7,19 @@ import { blockCard, unblockCard } from "$lib/utils/block_ui";
 
 import { notifyDanger, notifySuccess } from "$lib/utils/izi_toast";
 
-async function fetchData(page: number, perPage: number, orderBy: string, orderType: string, filter: Record<any, any>) {
+async function fetchData(request: Record<any, any>) {
   let filterPayload: Record<any, any> = {};
 
-  if (CheckHelper.isset(filter.name)) {
-    filterPayload.name = filter.name;
+  if (CheckHelper.isset(request.filter.name)) {
+    filterPayload.name = request.filter.name;
   }
 
   let payload = {
     isPaginate: true,
-    page: page,
-    perPage: perPage,
-    orderBy: orderBy,
-    orderType: orderType,
+    page: request.page,
+    perPage: request.perPage,
+    orderBy: request.orderBy,
+    orderType: request.orderType,
     ...(Object.keys(filterPayload).length > 0 && {
       filter: filterPayload,
     }),
@@ -30,8 +30,8 @@ async function fetchData(page: number, perPage: number, orderBy: string, orderTy
   return response;
 }
 
-async function deleteData(id: string) {
-  let productCategoryId = HashHelper.decrypt(id);
+async function deleteData(hashId: string) {
+  let productCategoryId = HashHelper.decrypt(hashId);
 
   let payload = {
     productCategoryId: productCategoryId,

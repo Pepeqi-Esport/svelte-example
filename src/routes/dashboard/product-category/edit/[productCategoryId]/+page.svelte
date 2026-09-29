@@ -8,7 +8,7 @@
 
   import { cardAnimate } from "$lib/utils/animate";
 
-  import { validateForm, fetchData, updateData } from "./edit";
+  import { validateForm, fetchData } from "./edit";
 
   let isLoading = $state(true);
 
@@ -32,9 +32,7 @@
 
     isLoading = false;
 
-    validateForm(async () => {
-      await updateData(form);
-    });
+    validateForm(form);
   });
 </script>
 

@@ -1,30 +1,29 @@
-import flatpickr from "flatpickr";
-import { Indonesian } from "flatpickr/dist/l10n/id.js";
-
 function loadDateFlatpickr() {
   let jQuery = window.jQuery;
   let flatpickrDateElement = jQuery(".flatpickr-date");
 
   if (flatpickrDateElement.length > 0) {
     flatpickrDateElement.each(function (this: any) {
-      flatpickr(this, {
-        locale: Indonesian,
+      let element = jQuery(this);
+
+      element.flatpickr({
+        locale: "id",
         altInput: true,
         dateFormat: "Y-m-d",
         altFormat: "j F Y",
-        disableMobile: true,
+        disableMobile: "true",
       });
     });
   }
 }
 
 function loadElementDateFlatpickr(element: any) {
-  flatpickr(element, {
-    locale: Indonesian,
+  element.flatpickr({
+    locale: "id",
     altInput: true,
     dateFormat: "Y-m-d",
     altFormat: "j F Y",
-    disableMobile: true,
+    disableMobile: "true",
   });
 }
 
@@ -34,28 +33,30 @@ function loadDatetimeFlatpickr() {
 
   if (flatpickrDatetimeElement.length > 0) {
     flatpickrDatetimeElement.each(function (this: any) {
-      flatpickr(this, {
-        locale: Indonesian,
+      let element = jQuery(this);
+
+      element.flatpickr({
+        locale: "id",
         enableTime: true,
         altInput: true,
         dateFormat: "Y-m-d H:i",
         altFormat: "j F Y H:i",
         time_24hr: true,
-        disableMobile: true,
+        disableMobile: "true",
       });
     });
   }
 }
 
 function loadElementDatetimeFlatpickr(element: any) {
-  flatpickr(element, {
-    locale: Indonesian,
+  element.flatpickr({
+    locale: "id",
     enableTime: true,
     altInput: true,
     dateFormat: "Y-m-d H:i",
     altFormat: "j F Y H:i",
     time_24hr: true,
-    disableMobile: true,
+    disableMobile: "true",
   });
 }
 
@@ -65,38 +66,33 @@ function loadTimeFlatpickr() {
 
   if (flatpickrTimeElement.length > 0) {
     flatpickrTimeElement.each(function (this: any) {
-      flatpickr(this, {
-        locale: Indonesian,
+      let element = jQuery(this);
+
+      element.flatpickr({
+        locale: "id",
         enableTime: true,
         noCalendar: true,
         altInput: true,
         dateFormat: "H:i",
         altFormat: "H:i",
         time_24hr: true,
-        disableMobile: true,
+        disableMobile: "true",
       });
     });
   }
 }
 
 function loadElementTimeFlatpickr(element: any) {
-  flatpickr(element, {
-    locale: Indonesian,
+  element.flatpickr({
+    locale: "id",
     enableTime: true,
     noCalendar: true,
     altInput: true,
     dateFormat: "H:i",
     altFormat: "H:i",
     time_24hr: true,
-    disableMobile: true,
+    disableMobile: "true",
   });
 }
 
-export {
-  loadDateFlatpickr,
-  loadElementDateFlatpickr,
-  loadDatetimeFlatpickr,
-  loadElementDatetimeFlatpickr,
-  loadTimeFlatpickr,
-  loadElementTimeFlatpickr,
-};
+export { loadDateFlatpickr, loadElementDateFlatpickr, loadDatetimeFlatpickr, loadElementDatetimeFlatpickr, loadTimeFlatpickr, loadElementTimeFlatpickr };

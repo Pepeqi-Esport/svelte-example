@@ -7,7 +7,6 @@ function loadSelect2() {
       let element = jQuery(this);
 
       element.wrap('<div class="position-relative"></div>').select2({
-        language: "id",
         allowClear: true,
         placeholder: "Pilih Salah Satu",
         dropdownParent: element.parent(),
@@ -18,7 +17,6 @@ function loadSelect2() {
 
 function loadElementSelect2(element: any) {
   element.wrap('<div class="position-relative"></div>').select2({
-    language: "id",
     allowClear: true,
     placeholder: "Pilih Salah Satu",
     dropdownParent: element.parent(),
@@ -34,13 +32,12 @@ function loadSelect2Image() {
       let element = jQuery(this);
 
       element.wrap('<div class="position-relative"></div>').select2({
-        language: "id",
         allowClear: true,
         placeholder: "Pilih Salah Satu",
         templateResult: _renderImageOption,
         templateSelection: _renderImageOption,
         dropdownParent: element.parent(),
-        escapeMarkup: function (es: string) {
+        escapeMarkup: function (es: any) {
           return es;
         },
       });
@@ -50,7 +47,6 @@ function loadSelect2Image() {
 
 function loadElementSelect2Image(element: any) {
   element.wrap('<div class="position-relative"></div>').select2({
-    language: "id",
     allowClear: true,
     placeholder: "Pilih Salah Satu",
     templateResult: _renderImageOption,
@@ -68,7 +64,6 @@ function loadSelect2Multiple() {
       let element = jQuery(this);
 
       element.wrap('<div class="position-relative"></div>').select2({
-        language: "id",
         placeholder: "Pilih Beberapa",
         multiple: true,
         width: "100%",
@@ -82,7 +77,6 @@ function loadSelect2Multiple() {
 
 function loadElementSelect2Multiple(element: any) {
   element.wrap('<div class="position-relative"></div>').select2({
-    language: "id",
     placeholder: "Pilih Beberapa",
     multiple: true,
     width: "100%",
@@ -101,7 +95,6 @@ function loadSelect2Modal() {
       let element = jQuery(this);
 
       element.select2({
-        language: "id",
         allowClear: true,
         placeholder: "Pilih Salah Satu",
         dropdownParent: element.parent(),
@@ -111,14 +104,10 @@ function loadSelect2Modal() {
 }
 
 function loadElementSelect2Modal(element: any) {
-  let jQuery = window.jQuery;
-  let modal = element.closest(".modal");
-
   element.select2({
-    language: "id",
     allowClear: true,
     placeholder: "Pilih Salah Satu",
-    dropdownParent: modal.length ? modal : element.parent(),
+    dropdownParent: element.parent(),
   });
 }
 
@@ -138,7 +127,6 @@ function loadSelect2MultipleModal() {
         }
 
         element.select2({
-          language: "id",
           placeholder: "Pilih Beberapa",
           multiple: true,
           width: "100%",
@@ -166,7 +154,6 @@ function loadElementSelect2MultipleModal(element: any) {
     }
 
     element.select2({
-      language: "id",
       placeholder: "Pilih Beberapa",
       multiple: true,
       width: "100%",
@@ -187,10 +174,10 @@ function loadElementSelect2MultipleModal(element: any) {
 // * Private Function
 // * =========================================================================================================================
 
-function _renderImageOption(option: { element: HTMLElement; text: string }) {
+function _renderImageOption(option: any) {
   let jQuery = window.jQuery;
 
-  if (!option.element || !jQuery(option.element).data("image")) {
+  if (!jQuery(option.element).data("image")) {
     return option.text;
   }
 
@@ -201,15 +188,14 @@ function _renderImageOption(option: { element: HTMLElement; text: string }) {
 
 function _bindSelect2MultipleBackspaceFix(element: any) {
   let syncSearchField = () => {
-    let select2Instance = element.data("select2");
+    const select2Instance = element.data("select2");
 
     if (!select2Instance) {
       return;
     }
 
     let searchField = select2Instance.$container.find(".select2-search__field");
-    let value = element.val();
-    let hasSelection = Array.isArray(value) ? value.length > 0 : Boolean(value);
+    let hasSelection = element.val() && element.val().length > 0;
 
     searchField.val("");
     searchField.css("width", hasSelection ? "0.75em" : "100%");
@@ -220,15 +206,4 @@ function _bindSelect2MultipleBackspaceFix(element: any) {
   });
 }
 
-export {
-  loadSelect2,
-  loadElementSelect2,
-  loadSelect2Image,
-  loadElementSelect2Image,
-  loadSelect2Multiple,
-  loadElementSelect2Multiple,
-  loadSelect2Modal,
-  loadElementSelect2Modal,
-  loadSelect2MultipleModal,
-  loadElementSelect2MultipleModal,
-};
+export { loadSelect2, loadElementSelect2, loadSelect2Image, loadElementSelect2Image, loadSelect2Multiple, loadElementSelect2Multiple, loadSelect2Modal, loadElementSelect2Modal, loadSelect2MultipleModal, loadElementSelect2MultipleModal };

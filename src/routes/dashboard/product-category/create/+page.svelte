@@ -3,7 +3,7 @@
 
   import { cardAnimate } from "$lib/utils/animate";
 
-  import { validateForm, createData } from "./create";
+  import { validateForm } from "./create";
 
   let form = $state({
     name: "",
@@ -11,9 +11,7 @@
   });
 
   onMount(() => {
-    validateForm(async () => {
-      await createData(form);
-    });
+    validateForm(form);
   });
 </script>
 

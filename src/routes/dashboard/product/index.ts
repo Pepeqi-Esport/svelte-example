@@ -23,31 +23,31 @@ async function fetchProductCategory() {
   return response;
 }
 
-async function fetchData(page: number, perPage: number, orderBy: string, orderType: string, filterForm: Record<any, any>) {
+async function fetchData(request: Record<any, any>) {
   let filterPayload: Record<any, any> = {};
 
-  if (CheckHelper.isset(filterForm.productCategoryId)) {
-    let productCategoryId = HashHelper.decrypt(filterForm.productCategoryId);
+  if (CheckHelper.isset(request.filter.productCategoryId)) {
+    let productCategoryId = HashHelper.decrypt(request.filter.productCategoryId);
 
     filterPayload.product_category_id = String(productCategoryId);
   }
 
-  if (CheckHelper.isset(filterForm.name)) {
-    filterPayload.name = filterForm.name;
+  if (CheckHelper.isset(request.filter.name)) {
+    filterPayload.name = request.filter.name;
   }
 
-  if (CheckHelper.isset(filterForm.price)) {
-    let price = FormatterHelper.convertToInteger(filterForm.price);
+  if (CheckHelper.isset(request.filter.price)) {
+    let price = FormatterHelper.convertToInteger(request.filter.price);
 
     filterPayload.price = price;
   }
 
   let payload = {
     isPaginate: true,
-    page: page,
-    perPage: perPage,
-    orderBy: orderBy,
-    orderType: orderType,
+    page: request.page,
+    perPage: request.perPage,
+    orderBy: request.orderBy,
+    orderType: request.orderType,
     ...(Object.keys(filterPayload).length > 0 && {
       filter: filterPayload,
     }),
@@ -58,8 +58,8 @@ async function fetchData(page: number, perPage: number, orderBy: string, orderTy
   return response;
 }
 
-async function deleteData(id: string) {
-  let productId = HashHelper.decrypt(id);
+async function deleteData(hashId: string) {
+  let productId = HashHelper.decrypt(hashId);
 
   let payload = {
     productId: productId,
@@ -82,16 +82,10 @@ function productCategorySelect2(tableRequest: Record<any, any>) {
   let jQuery = window.jQuery;
   let filterProductCategoryIdElement = jQuery("#filterProductCategoryId");
 
-  if (!filterProductCategoryIdElement.length) {
-    return;
-  };
-
   loadElementSelect2Modal(filterProductCategoryIdElement);
 
   filterProductCategoryIdElement.on("change", () => {
-    let value = String(filterProductCategoryIdElement.val() ?? "");
-
-    tableRequest.filter.productCategoryId = value;
+    tableRequest.filter.productCategoryId = filterProductCategoryIdElement.val() ?? "";
   });
 }
 

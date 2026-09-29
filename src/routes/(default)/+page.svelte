@@ -3,7 +3,7 @@
 
   import { cardAnimate } from "$lib/utils/animate";
 
-  import { validateForm, authenticate, visiblePassword } from "./login";
+  import { validateForm, visiblePassword } from "./login";
 
   let form = $state({
     email: "",
@@ -11,9 +11,7 @@
   });
 
   onMount(() => {
-    validateForm(async () => {
-      await authenticate(form);
-    });
+    validateForm(form);
   });
 </script>
 

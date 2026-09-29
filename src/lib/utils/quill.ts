@@ -1,5 +1,3 @@
-import Quill from "quill";
-
 function loadElementQuill(element: any) {
   let toolbarOptions = [
     [
@@ -58,8 +56,8 @@ function loadElementQuill(element: any) {
       toolbar: {
         container: toolbarOptions,
         handlers: {
-          "line-height": function (this: { quill: { format: (name: string, value: string) => void } }, value: string) {
-            this.quill.format("line-height", value);
+          "line-height": function (value: any) {
+            (this as any).quill.format("line-height", value);
           },
         },
       },

@@ -1,10 +1,6 @@
 function loadRegex() {
   let jQuery = window.jQuery;
 
-  if (!jQuery) {
-    return;
-  }
-
   jQuery(document).on("keypress", ".regex-number", function (event: any) {
     let regExp = /^[0-9]+$/i;
 

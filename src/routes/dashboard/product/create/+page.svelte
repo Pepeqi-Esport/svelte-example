@@ -10,16 +10,13 @@
   import { formatNumberElement } from "$lib/utils/formatter";
   import { loadRegex } from "$lib/utils/regex";
 
-  import { createData, fetchProductCategory } from "./action";
-  import { initFormValidation, initSelect2, initFlatpickr, initDropify } from "./init";
+  import { fetchProductCategory, validateForm } from "./create";
 
   let isLoading = $state(true);
 
   let productCategory = $state<any[]>([]);
 
-  let fv: ReturnType<typeof initFormValidation> = null;
-
-  let createForm = $state({
+  let form = $state({
     productCategoryId: "",
     name: "",
     description: "",
@@ -42,19 +39,7 @@
     await tick();
     loadRegex();
 
-    fv = initFormValidation(() => createData(createForm, fv));
-
-    initSelect2((value) => {
-      createForm.productCategoryId = value;
-    }, fv);
-
-    initFlatpickr((value) => {
-      createForm.publishedAt = value;
-    }, fv);
-
-    initDropify((file) => {
-      createForm.photoFile = file;
-    }, fv);
+    validateForm(form);
   });
 </script>
 
@@ -89,7 +74,7 @@
                 {#if isLoading}
                   <InputSkeleton />
                 {:else}
-                  <select class="form-select" name="productCategoryId" id="productCategoryId" bind:value={createForm.productCategoryId}>
+                  <select class="form-select" name="productCategoryId" id="productCategoryId" bind:value={form.productCategoryId}>
                     <option value=""> Pilih salah satu </option>
 
                     {#each productCategory as row}
@@ -109,7 +94,7 @@
                 {#if isLoading}
                   <InputSkeleton />
                 {:else}
-                  <input type="text" class="form-control" name="name" id="name" bind:value={createForm.name} placeholder="Masukkan Nama" autocomplete="off" />
+                  <input type="text" class="form-control" name="name" id="name" bind:value={form.name} placeholder="Masukkan Nama" autocomplete="off" />
                 {/if}
               </div>
             </div>
@@ -121,15 +106,9 @@
                 {#if isLoading}
                   <TextareaSkeleton />
                 {:else}
-                  <textarea
-                    class="form-control"
-                    name="description"
-                    id="description"
-                    bind:value={createForm.description}
-                    placeholder="Masukkan Deskripsi"
-                    autocomplete="off"
-                    cols="30"
-                    rows="5"></textarea>
+                  <div id="description-editor"></div>
+
+                  <input type="hidden" name="description" id="description" bind:value={form.description} />
                 {/if}
               </div>
             </div>
@@ -148,15 +127,15 @@
                       class="form-control regex-number"
                       name="price"
                       id="price"
-                      bind:value={createForm.price}
+                      bind:value={form.price}
                       onkeyup={(e) => {
                         formatNumberElement(e.currentTarget);
-                        createForm.price = (e.currentTarget as HTMLInputElement).value;
+                        form.price = (e.currentTarget as HTMLInputElement).value;
                       }}
                       onpaste={(e) => {
                         setTimeout(() => {
                           formatNumberElement(e.currentTarget);
-                          createForm.price = (e.currentTarget as HTMLInputElement).value;
+                          form.price = (e.currentTarget as HTMLInputElement).value;
                         }, 0);
                       }}
                       placeholder="Masukkan Harga"
@@ -178,7 +157,7 @@
                     class="form-control"
                     name="publishedAt"
                     id="publishedAt"
-                    bind:value={createForm.publishedAt}
+                    bind:value={form.publishedAt}
                     placeholder="Masukkan Diterbitkan Pada"
                     autocomplete="off" />
                 {/if}

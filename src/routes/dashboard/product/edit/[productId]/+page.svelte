@@ -5,23 +5,22 @@
   import InputSkeleton from "$lib/components/InputSkeleton.svelte";
   import TextareaSkeleton from "$lib/components/TextareaSkeleton.svelte";
 
+  import FormatterHelper from "$lib/helpers/formatter_helper";
   import HashHelper from "$lib/helpers/hash_helper";
 
   import { cardAnimate } from "$lib/utils/animate";
   import { formatNumberElement } from "$lib/utils/formatter";
   import { loadRegex } from "$lib/utils/regex";
 
-  import { fetchData, fetchProductCategory, editData } from "./action";
-  import { initDropify, initFlatpickr, initFormValidation, initSelect2 } from "./init";
+  import { fetchData, fetchProductCategory, validateForm } from "./edit";
 
   let isLoading = $state(true);
 
   let productCategory = $state<any[]>([]);
 
   let form = $state({
-    productId: 0,
-    productCategoryId: 0,
-    productCategoryHashId: "",
+    productId: "",
+    productCategoryId: "",
     productCategoryName: "",
     name: "",
     description: "",
@@ -31,12 +30,8 @@
     photoFileUrl: "",
   });
 
-  let fv: ReturnType<typeof initFormValidation> = null;
-
   if (page.params.productId) {
-    let productId = HashHelper.decrypt(page.params.productId);
-
-    form.productId = productId;
+    form.productId = page.params.productId;
   }
 
   onMount(async () => {
@@ -52,35 +47,24 @@
 
     let product = result.data;
 
-    let productCategoryHashId = HashHelper.encrypt(product.product_category.id);
+    let productCategoryId = HashHelper.encrypt(product.product_category_id);
 
-    form.productCategoryId = product.product_category.id;
-    form.productCategoryHashId = productCategoryHashId;
+    let price = FormatterHelper.formatNumber(product.price);
+
+    form.productCategoryId = productCategoryId;
     form.productCategoryName = product.product_category.name;
     form.name = product.name;
     form.description = product.description;
-    form.price = product.price;
-    form.publishedAt = product.publishedAt;
-    form.photoFileUrl = product.photoFileUrl;
+    form.price = price;
+    form.publishedAt = product.published_at;
+    form.photoFileUrl = product.photo_file_url;
 
     isLoading = false;
 
     await tick();
     loadRegex();
 
-    fv = initFormValidation(() => editData(form, fv));
-
-    initSelect2((value) => {
-      form.productCategoryHashId = value;
-    }, fv);
-
-    initFlatpickr((value) => {
-      form.publishedAt = value;
-    }, fv);
-
-    initDropify((file) => {
-      form.photoFile = file;
-    }, fv);
+    validateForm(form);
   });
 </script>
 
@@ -115,17 +99,13 @@
                 {#if isLoading}
                   <InputSkeleton />
                 {:else}
-                  <select class="form-select" name="productCategoryId" id="productCategoryId" bind:value={form.productCategoryHashId}>
-                    <option value={form.productCategoryHashId}>
-                      {form.productCategoryName}
-                    </option>
+                  <select class="form-select" name="productCategoryId" id="productCategoryId" bind:value={form.productCategoryId}>
+                    <option value=""> Pilih salah satu </option>
 
                     {#each productCategory as row}
-                      {#if row.id != form.productCategoryId}
-                        <option value={HashHelper.encrypt(row.id)}>
-                          {row.name}
-                        </option>
-                      {/if}
+                      <option value={HashHelper.encrypt(row.id)}>
+                        {row.name}
+                      </option>
                     {/each}
                   </select>
                 {/if}
@@ -151,15 +131,9 @@
                 {#if isLoading}
                   <TextareaSkeleton />
                 {:else}
-                  <textarea
-                    class="form-control"
-                    name="description"
-                    id="description"
-                    bind:value={form.description}
-                    placeholder="Masukkan Deskripsi"
-                    autocomplete="off"
-                    cols="30"
-                    rows="5"></textarea>
+                  <div id="description-editor">{form.description}</div>
+
+                  <input type="hidden" name="description" id="description" bind:value={form.description} />
                 {/if}
               </div>
             </div>
@@ -222,7 +196,13 @@
                 {#if isLoading}
                   <TextareaSkeleton />
                 {:else}
-                  <input type="file" name="photoFile" id="photoFile" data-allowed-file-extensions="jpg jpeg png" data-max-file-size="5M" />
+                  <input
+                    type="file"
+                    name="photoFile"
+                    id="photoFile"
+                    data-allowed-file-extensions="jpg jpeg png"
+                    data-max-file-size="5M"
+                    data-default-file={form.photoFileUrl} />
                 {/if}
               </div>
             </div>

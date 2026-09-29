@@ -45,7 +45,7 @@
     isLoading = true;
     tableRequest.page = targetPage;
 
-    let result = await fetchData(tableRequest.page, tableRequest.perPage, tableRequest.orderBy, tableRequest.orderType, tableRequest.filter);
+    let result = await fetchData(tableRequest);
 
     table.data = result.data;
     table.pagination = result.pagination;
@@ -57,7 +57,7 @@
     isLoading = true;
     tableRequest.page = 1;
 
-    let result = await fetchData(tableRequest.page, tableRequest.perPage, tableRequest.orderBy, tableRequest.orderType, tableRequest.filter);
+    let result = await fetchData(tableRequest);
 
     table.data = result.data;
     table.pagination = result.pagination;
@@ -78,7 +78,7 @@
     isLoading = true;
     tableRequest.page = 1;
 
-    let result = await fetchData(tableRequest.page, tableRequest.perPage, tableRequest.orderBy, tableRequest.orderType, tableRequest.filter);
+    let result = await fetchData(tableRequest);
 
     table.data = result.data;
     table.pagination = result.pagination;
@@ -106,7 +106,7 @@
         isLoading = true;
         tableRequest.page = 1;
 
-        let result = await fetchData(tableRequest.page, tableRequest.perPage, tableRequest.orderBy, tableRequest.orderType, tableRequest.filter);
+        let result = await fetchData(tableRequest);
 
         table.data = result.data;
         table.pagination = result.pagination;
@@ -123,7 +123,7 @@
 
     productCategory = result.data;
 
-    result = await fetchData(tableRequest.page, tableRequest.perPage, tableRequest.orderBy, tableRequest.orderType, tableRequest.filter);
+    result = await fetchData(tableRequest);
 
     table.data = result.data;
     table.pagination = result.pagination;

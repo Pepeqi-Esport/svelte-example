@@ -9,7 +9,7 @@
 
   import { cardAnimate } from "$lib/utils/animate";
 
-  import { deleteData, fetchData } from ".";
+  import { deleteData, fetchData } from "./index";
 
   let isLoading = $state(true);
 
@@ -37,7 +37,7 @@
     isLoading = true;
     tableRequest.page = 1;
 
-    let result = await fetchData(tableRequest.page, tableRequest.perPage, tableRequest.orderBy, tableRequest.orderType, tableRequest.filter);
+    let result = await fetchData(tableRequest);
 
     table.data = result.data;
     table.pagination = result.pagination;
@@ -49,7 +49,7 @@
     isLoading = true;
     tableRequest.page = targetPage;
 
-    let result = await fetchData(tableRequest.page, tableRequest.perPage, tableRequest.orderBy, tableRequest.orderType, tableRequest.filter);
+    let result = await fetchData(tableRequest);
 
     table.data = result.data;
     table.pagination = result.pagination;
@@ -70,7 +70,7 @@
     isLoading = true;
     tableRequest.page = 1;
 
-    let result = await fetchData(tableRequest.page, tableRequest.perPage, tableRequest.orderBy, tableRequest.orderType, tableRequest.filter);
+    let result = await fetchData(tableRequest);
 
     table.data = result.data;
     table.pagination = result.pagination;
@@ -98,7 +98,7 @@
         isLoading = true;
         tableRequest.page = 1;
 
-        let result = await fetchData(tableRequest.page, tableRequest.perPage, tableRequest.orderBy, tableRequest.orderType, tableRequest.filter);
+        let result = await fetchData(tableRequest);
 
         table.data = result.data;
         table.pagination = result.pagination;
@@ -111,7 +111,7 @@
   onMount(async () => {
     isLoading = true;
 
-    let result = await fetchData(tableRequest.page, tableRequest.perPage, tableRequest.orderBy, tableRequest.orderType, tableRequest.filter);
+    let result = await fetchData(tableRequest);
 
     table.data = result.data;
     table.pagination = result.pagination;

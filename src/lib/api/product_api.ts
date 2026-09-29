@@ -124,7 +124,10 @@ export default class ProductApi {
     formData.append('description', request.description);
     formData.append('price', request.price);
     formData.append('published_at', request.publishedAt);
-    formData.append('photo_file', request.photoFile);
+
+    if (request.photoFile) {
+      formData.append('photo_file', request.photoFile);
+    }
 
     return await axios.post(url, formData, {
       headers: {
