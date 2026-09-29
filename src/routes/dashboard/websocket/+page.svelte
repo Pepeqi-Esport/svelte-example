@@ -1,82 +1,67 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-
-  import { getProduct } from "$lib/api/product_api";
-  import { getProductCategory } from "$lib/api/product_category_api";
+  import { onDestroy, onMount } from "svelte";
+  import { Centrifuge } from "centrifuge";
 
   import { cardAnimate } from "$lib/utils/animate";
 
-  let isLoading = $state(true);
-  let productCount = $state(0);
-  let productCategoryCount = $state(0);
+  let host = import.meta.env.VITE_CENTRIFUGO_HOST;
+  let channel = import.meta.env.VITE_CENTRIFUGO_CHANNEL;
+  let clientKey = import.meta.env.VITE_CENTRIFUGO_CLIENT_KEY;
 
-  onMount(async () => {
-    let productResponse = await getProduct(1, 10, "name", "asc");
-    let productCategoryResponse = await getProductCategory(1, 10, "name", "asc");
+  let centrifuge: Centrifuge | null = null;
 
-    if (productResponse.status) {
-      productCount = productResponse.pagination.total;
-    }
+  let websocketUrl = `wss://${host}/connection/websocket`;
 
-    if (productCategoryResponse.status) {
-      productCategoryCount = productCategoryResponse.pagination.total;
-    }
+  onMount(() => {
+    let jQuery = window.jQuery;
 
-    isLoading = false;
+    centrifuge = new Centrifuge(websocketUrl, {
+      token: clientKey,
+    });
+
+    centrifuge
+      .on("connecting", function (ctx) {
+        console.log(`connecting: ${ctx.code}, ${ctx.reason}`);
+      })
+      .on("connected", function (ctx) {
+        console.log(`connected over ${ctx.transport}`);
+      })
+      .on("disconnected", function (ctx) {
+        console.log(`disconnected: ${ctx.code}, ${ctx.reason}`);
+      })
+      .connect();
+
+    let sub = centrifuge.newSubscription(channel);
+
+    sub
+      .on("publication", function (ctx) {
+        console.log(ctx.data);
+        jQuery("#message").append(ctx.data.message + "<br>");
+      })
+      .on("subscribing", function (ctx) {
+        console.log(`subscribing: ${ctx.code}, ${ctx.reason}`);
+      })
+      .on("subscribed", function (ctx) {
+        console.log("subscribed", ctx);
+      })
+      .on("unsubscribed", function (ctx) {
+        console.log(`unsubscribed: ${ctx.code}, ${ctx.reason}`);
+      })
+      .subscribe();
+  });
+
+  onDestroy(() => {
+    centrifuge?.disconnect();
   });
 </script>
 
 <div class="row">
-  <!-- * Product Category -->
-  <div class="col-lg-6 col-md-6 col-sm-12">
+  <div class="col-xl">
     <div class="card {cardAnimate}">
       <div class="card-body">
-        <div class="d-flex align-items-center">
-          <div class="badge rounded-pill bg-label-info me-3 p-2">
-            <i class="icon-base ti tabler-archive"></i>
-          </div>
+        <h5 class="card-title">Pesan Realtime Websocket</h5>
 
-          <div class="card-info">
-            <h5 class="mb-0">
-              {#if isLoading}
-                <span class="placeholder-glow">
-                  <span class="placeholder col-12" aria-hidden="true"></span>
-                </span>
-              {:else}
-                {productCategoryCount}
-              {/if}
-            </h5>
-
-            <small> Kategori Produk </small>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- * Product -->
-  <div class="col-lg-6 col-md-6 col-sm-12">
-    <div class="card {cardAnimate}">
-      <div class="card-body">
-        <div class="d-flex align-items-center">
-          <div class="badge rounded-pill bg-label-success me-3 p-2">
-            <i class="icon-base ti tabler-file-text"></i>
-          </div>
-
-          <div class="card-info">
-            <h5 class="mb-0">
-              {#if isLoading}
-                <span class="placeholder-glow">
-                  <span class="placeholder col-12" aria-hidden="true"></span>
-                </span>
-              {:else}
-                {productCount}
-              {/if}
-            </h5>
-
-            <small> Produk </small>
-          </div>
-        </div>
+        <div id="message"></div>
       </div>
     </div>
   </div>

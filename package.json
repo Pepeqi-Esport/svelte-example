@@ -11,7 +11,9 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check .",
-		"format": "prettier --write ."
+		"format": "prettier --write .",
+		"env:encrypt": "npx ts-node src/bin/env-cipher.ts encrypt",
+		"env:decrypt": "npx ts-node src/bin/env-cipher.ts decrypt"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^7.0.1",
@@ -28,6 +30,7 @@
 	},
 	"dependencies": {
 		"axios": "^1.20.0",
+		"centrifuge": "^5.7.4",
 		"hashids": "^2.3.0",
 		"luxon": "^3.7.2"
 	}
