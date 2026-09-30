@@ -1,5 +1,12 @@
 node_modules
 
+# Depedencies lock
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+bun.lock
+bun.lockb
+
 # Output
 .output
 .vercel
