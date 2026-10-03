@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
-  import Alert from "$lib/components/Alert.svelte";
   import Footer from "$lib/components/Footer.svelte";
   import Navbar from "$lib/components/Navbar.svelte";
   import Sidebar from "$lib/components/Sidebar.svelte";
@@ -48,8 +47,6 @@
 
       <div class="content-wrapper">
         <div class="container-xxl flex-grow-1 container-p-y">
-          <Alert />
-
           {@render children()}
         </div>
 
