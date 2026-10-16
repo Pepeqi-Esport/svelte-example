@@ -78,6 +78,25 @@
     isLoading = false;
   }
 
+  async function handleSort(column: string) {
+    if (tableRequest.orderBy == column) {
+      tableRequest.orderType = tableRequest.orderType == "asc" ? "desc" : "asc";
+    } else {
+      tableRequest.orderBy = column;
+      tableRequest.orderType = "asc";
+    }
+
+    isLoading = true;
+    tableRequest.page = 1;
+
+    let result = await fetchData(tableRequest);
+
+    table.data = result.data;
+    table.pagination = result.pagination;
+
+    isLoading = false;
+  }
+
   async function handleDelete(productCategoryId: string) {
     Swal.fire({
       icon: "question",
@@ -162,7 +181,16 @@
               <tr>
                 <th> No </th>
 
-                <th> Nama </th>
+                <th class="user-select-none" style="cursor: pointer;" onclick={() => handleSort("name")}>
+                  <span class="d-inline-flex align-items-center gap-1">
+                    Nama
+                    {#if tableRequest.orderBy == "name"}
+                      <i class="icon-base ti icon-sm {tableRequest.orderType == 'asc' ? 'tabler-arrow-up' : 'tabler-arrow-down'}"></i>
+                    {:else}
+                      <i class="icon-base ti icon-sm tabler-arrows-sort"></i>
+                    {/if}
+                  </span>
+                </th>
 
                 <th> Aksi </th>
               </tr>
