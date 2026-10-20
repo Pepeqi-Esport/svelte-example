@@ -13,7 +13,7 @@
   import { loadRegex } from "$lib/utils/regex";
   import "$lib/utils/select2_translation";
 
-  import { fetchProductCategory, fetchData, deleteData, productCategorySelect2 } from "./index";
+  import { fetchProductCategory, fetchData, deleteData, productCategorySelect2, publishedDateFlatpickr } from "./index";
 
   let isLoading = $state(true);
 
@@ -33,6 +33,7 @@
       productCategoryId: "",
       name: "",
       price: "",
+      publishedDate: "",
     },
   });
 
@@ -154,6 +155,7 @@
     loadRegex();
 
     productCategorySelect2(tableRequest);
+    publishedDateFlatpickr(tableRequest);
   });
 </script>
 
@@ -234,7 +236,17 @@
                   </span>
                 </th>
 
-                <th> Diterbitkan Pada </th>
+                <th class="user-select-none" style="cursor: pointer;" onclick={() => handleSort("published_date")}>
+                  <span class="d-inline-flex align-items-center gap-1">
+                    Tanggal Diterbitkan
+
+                    {#if tableRequest.orderBy == "published_date"}
+                      <i class="icon-base ti icon-sm {tableRequest.orderType == 'asc' ? 'tabler-arrow-up' : 'tabler-arrow-down'}"></i>
+                    {:else}
+                      <i class="icon-base ti icon-sm tabler-arrows-sort"></i>
+                    {/if}
+                  </span>
+                </th>
 
                 <th> Foto </th>
 
@@ -266,7 +278,7 @@
                       </td>
 
                       <td>
-                        {FormatterHelper.formatDatetime(row.published_at)}
+                        {FormatterHelper.formatDate(row.published_date)}
                       </td>
 
                       <td>
@@ -396,6 +408,21 @@
                     placeholder="Masukkan Harga"
                     autocomplete="off" />
                 </div>
+              </div>
+            </div>
+
+            <div class="col-lg-12 col-md-12 col-sm-12">
+              <div class="mb-3">
+                <label class="form-label" for="filterPublishedDate"> Tanggal Diterbitkan </label>
+
+                <input
+                  type="text"
+                  class="form-control"
+                  name="filter[publishedDate]"
+                  id="filterPublishedDate"
+                  bind:value={tableRequest.filter.publishedDate}
+                  placeholder="Masukkan Tanggal Diterbitkan"
+                  autocomplete="off" />
               </div>
             </div>
           </div>

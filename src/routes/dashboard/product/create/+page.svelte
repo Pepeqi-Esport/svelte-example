@@ -21,7 +21,7 @@
     name: "",
     description: "",
     price: "",
-    publishedAt: "",
+    publishedDate: "",
     photoFile: null as File | null,
   });
 
@@ -147,7 +147,7 @@
 
             <div class="col-lg-12 col-md-12 col-sm-12">
               <div class="mb-3">
-                <label class="form-label" for="publishedAt"> Diterbitkan Pada </label>
+                <label class="form-label" for="publishedDate"> Tanggal Diterbitkan </label>
 
                 {#if isLoading}
                   <InputSkeleton />
@@ -155,10 +155,10 @@
                   <input
                     type="text"
                     class="form-control"
-                    name="publishedAt"
-                    id="publishedAt"
-                    bind:value={form.publishedAt}
-                    placeholder="Masukkan Diterbitkan Pada"
+                    name="publishedDate"
+                    id="publishedDate"
+                    bind:value={form.publishedDate}
+                    placeholder="Masukkan Tanggal Diterbitkan"
                     autocomplete="off" />
                 {/if}
               </div>

@@ -25,7 +25,7 @@
     name: "",
     description: "",
     price: "",
-    publishedAt: "",
+    publishedDate: "",
     photoFile: null as File | null,
     photoFileUrl: "",
   });
@@ -56,7 +56,7 @@
     form.name = product.name;
     form.description = product.description;
     form.price = price;
-    form.publishedAt = product.published_at;
+    form.publishedDate = product.published_date;
     form.photoFileUrl = product.photo_file_url;
 
     isLoading = false;
@@ -131,7 +131,7 @@
                 {#if isLoading}
                   <TextareaSkeleton />
                 {:else}
-                  <div id="description-editor">{form.description}</div>
+                  <div id="description-editor"></div>
 
                   <input type="hidden" name="description" id="description" bind:value={form.description} />
                 {/if}
@@ -172,7 +172,7 @@
 
             <div class="col-lg-12 col-md-12 col-sm-12">
               <div class="mb-3">
-                <label class="form-label" for="publishedAt"> Diterbitkan Pada </label>
+                <label class="form-label" for="publishedDate"> Tanggal Diterbitkan </label>
 
                 {#if isLoading}
                   <InputSkeleton />
@@ -180,10 +180,10 @@
                   <input
                     type="text"
                     class="form-control"
-                    name="publishedAt"
-                    id="publishedAt"
-                    bind:value={form.publishedAt}
-                    placeholder="Masukkan Diterbitkan Pada"
+                    name="publishedDate"
+                    id="publishedDate"
+                    bind:value={form.publishedDate}
+                    placeholder="Masukkan Tanggal Diterbitkan"
                     autocomplete="off" />
                 {/if}
               </div>

@@ -9,7 +9,7 @@ import HashHelper from "$lib/helpers/hash_helper";
 
 import { blockCard, unblockCard } from "$lib/utils/block_ui";
 import { loadElementDropify } from "$lib/utils/dropify";
-import { loadElementDatetimeFlatpickr } from "$lib/utils/flatpickr";
+import { loadElementDateFlatpickr } from "$lib/utils/flatpickr";
 import { notifyDanger, notifySuccess } from "$lib/utils/izi_toast";
 import { loadElementQuill } from "$lib/utils/quill";
 import { loadElementSelect2 } from "$lib/utils/select2";
@@ -72,22 +72,22 @@ function validateForm(form: Record<any, any>) {
         },
       },
 
-      publishedAt: {
+      publishedDate: {
         validators: {
           callback: {
             callback: function () {
               let jQuery = window.jQuery;
-              let publishedAtElement = jQuery("#publishedAt");
-              let nextElement = publishedAtElement.next();
+              let publishedDateElement = jQuery("#publishedDate");
+              let nextElement = publishedDateElement.next();
 
               nextElement.removeClass("is-invalid");
 
-              if (publishedAtElement.val() == "") {
+              if (publishedDateElement.val() == "") {
                 nextElement.addClass("is-invalid");
 
                 return {
                   valid: false,
-                  message: "Diterbitkan pada tidak boleh kosong !",
+                  message: "Tanggal Diterbitkan tidak boleh kosong !",
                 };
               }
 
@@ -136,13 +136,13 @@ function validateForm(form: Record<any, any>) {
         let productCategoryId = HashHelper.decrypt(form.productCategoryId);
         let price = FormatterHelper.convertToInteger(form.price);
 
-        let publishedAtDateTime = DateTime.fromFormat(form.publishedAt, "yyyy-MM-dd HH:mm:ss");
+        let publishedDateDateTime = DateTime.fromFormat(form.publishedDate, "yyyy-MM-dd");
 
-        if (!publishedAtDateTime.isValid) {
-          publishedAtDateTime = DateTime.fromFormat(form.publishedAt, "yyyy-MM-dd HH:mm");
+        if (!publishedDateDateTime.isValid) {
+          publishedDateDateTime = DateTime.fromFormat(form.publishedDate, "yyyy-MM-dd");
         }
 
-        let publishedAt = publishedAtDateTime.toFormat("yyyy-MM-dd HH:mm:ss");
+        let publishedDate = publishedDateDateTime.toFormat("yyyy-MM-dd");
 
         let result = await ProductApi.updateProduct({
           productId: productId,
@@ -150,7 +150,7 @@ function validateForm(form: Record<any, any>) {
           name: form.name,
           description: form.description,
           price: price,
-          publishedAt: publishedAt,
+          publishedDate: publishedDate,
           ...(CheckHelper.isset(form.photoFile) && {
             photoFile: form.photoFile
           }),
@@ -178,6 +178,11 @@ function validateForm(form: Record<any, any>) {
   });
 
   let quillElement = loadElementQuill("#description-editor");
+
+  if (form.description) {
+    quillElement.clipboard.dangerouslyPasteHTML(form.description);
+  }
+
   quillElement.on("text-change", () => {
     let value = quillElement.root.innerHTML;
     form.description = value;
@@ -185,12 +190,12 @@ function validateForm(form: Record<any, any>) {
     fv.revalidateField("description");
   });
 
-  let publishedAtElement = jQuery("#publishedAt");
-  loadElementDatetimeFlatpickr(publishedAtElement);
-  publishedAtElement.on("change", () => {
-    form.publishedAt = String(publishedAtElement.val() ?? "");
+  let publishedDateElement = jQuery("#publishedDate");
+  loadElementDateFlatpickr(publishedDateElement);
+  publishedDateElement.on("change", () => {
+    form.publishedDate = String(publishedDateElement.val() ?? "");
 
-    fv.revalidateField("publishedAt");
+    fv.revalidateField("publishedDate");
   });
 
   let photoFileElement = jQuery("#photoFile");

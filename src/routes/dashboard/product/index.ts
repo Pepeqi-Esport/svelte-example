@@ -6,6 +6,7 @@ import FormatterHelper from "$lib/helpers/formatter_helper";
 import HashHelper from "$lib/helpers/hash_helper";
 
 import { blockCard, unblockCard } from "$lib/utils/block_ui";
+import { loadElementDateFlatpickr } from "$lib/utils/flatpickr";
 import { notifyDanger, notifySuccess } from "$lib/utils/izi_toast";
 import { loadElementSelect2Modal } from "$lib/utils/select2";
 
@@ -40,6 +41,10 @@ async function fetchData(request: Record<any, any>) {
     let price = FormatterHelper.convertToInteger(request.filter.price);
 
     filterPayload.price = price;
+  }
+
+  if (CheckHelper.isset(request.filter.publishedDate)) {
+    filterPayload.published_date = request.filter.publishedDate;
   }
 
   let payload = {
@@ -89,4 +94,15 @@ function productCategorySelect2(tableRequest: Record<any, any>) {
   });
 }
 
-export { fetchProductCategory, fetchData, deleteData, productCategorySelect2 };
+function publishedDateFlatpickr(tableRequest: Record<any, any>) {
+  let jQuery = window.jQuery;
+  let publishedDateElement = jQuery("#filterPublishedDate");
+
+  loadElementDateFlatpickr(publishedDateElement);
+
+  publishedDateElement.on("change", () => {
+    tableRequest.filter.publishedDate = publishedDateElement.val() ?? "";
+  });
+}
+
+export { fetchProductCategory, fetchData, deleteData, productCategorySelect2, publishedDateFlatpickr };

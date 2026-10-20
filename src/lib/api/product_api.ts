@@ -87,7 +87,7 @@ export default class ProductApi {
     formData.append('name', request.name);
     formData.append('description', request.description);
     formData.append('price', String(request.price));
-    formData.append('published_at', request.publishedAt);
+    formData.append('published_date', request.publishedDate);
 
     if (request.photoFile) {
       formData.append('photo_file', request.photoFile);
@@ -123,7 +123,7 @@ export default class ProductApi {
     formData.append('name', request.name);
     formData.append('description', request.description);
     formData.append('price', request.price);
-    formData.append('published_at', request.publishedAt);
+    formData.append('published_date', request.publishedDate);
 
     if (request.photoFile) {
       formData.append('photo_file', request.photoFile);
