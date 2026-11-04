@@ -56,28 +56,15 @@
                 </div>
               </div>
             </div>
+          </div>
 
-            <div class="col-lg-12 col-md-12 col-sm-12">
-              <div class="mb-3">
-                <button type="submit" class="btn btn-primary w-100">
-                  <i class="icon-base ti tabler-login me-1"></i>
-                  Masuk
-                </button>
-              </div>
-            </div>
+          <div class="my-3">
+            <button type="submit" class="btn btn-primary w-100">
+              <i class="icon-base ti tabler-login me-1"></i>
+              Masuk
+            </button>
           </div>
         </form>
-
-        <hr />
-
-        <div class="mb-3">
-          <a href="/google/oauth/redirect">
-            <button type="button" class="btn btn-secondary w-100">
-              <i class="icon-base ti tabler-brand-google me-1"></i>
-              Google
-            </button>
-          </a>
-        </div>
       </div>
     </div>
   </div>
