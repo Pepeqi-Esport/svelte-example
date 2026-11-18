@@ -3,52 +3,53 @@
 ## Overview
 
 This document outlines the setup and structure of Svelte Example. This apps are using :
-* Vuexy 10.11.1 as main template
-* Svelte 5 as main framework
+
+- Vuexy 10.11.1 as main template
+- Svelte 5 as main framework
 
 ## System Requirements
 
-* Node Js 24.0 or higher
+- Node Js 24.0 or higher
 
 ## Installation Steps
 
-* Clone the project and move to project directory
+- Clone the project and move to project directory
 
 ```bash
 https://github.com/Pepeqi-Esport/svelte-example.git
 ```
 
-* Install dependencies
+- Install dependencies
 
 ```bash
 bun install
 ```
 
-* Decrypt the env with your own key
+- Decrypt the env with your own key
 
 ```bash
 bun env:decrypt --key=your-own-key
 ```
 
-* Decrypt the production env with your own key
+- Decrypt the production env with your own key
 
 ```bash
 bun env:decrypt --key=your-own-key --env=production
 ```
 
-* Build Application
+- Build Application
 
 ```bash
 bun run build
 ```
 
-* Run Application in Development
+- Run Application in Development
 
 ```bash
 bun dev
 ```
 
-* Run Application in Production
+- Run Application in Production
 
 ```bash
 pm2 start ecosystem.config.cjs
